@@ -29,16 +29,41 @@ npm run build:backend && npm start --workspace=backend
 
 ## 🔧 Variables de Entorno Necesarias
 
-Asegúrate de configurar estas variables en Render:
+⚠️ **IMPORTANTE**: Debes configurar estas variables en Render antes de que el servidor pueda iniciar.
 
-- `DATABASE_URL` - URL de conexión a PostgreSQL
-- `JWT_SECRET` - Secreto para JWT (mínimo 32 caracteres)
-- `JWT_REFRESH_SECRET` - Secreto para refresh tokens (mínimo 32 caracteres)
-- `PORT` - Puerto (Render lo asigna automáticamente, pero puedes usar 5000)
-- `NODE_ENV` - `production`
-- `FRONTEND_URL` - URL de tu frontend (ej: https://tu-frontend.onrender.com)
-- `JWT_EXPIRES_IN` - `3600` (1 hora)
-- `JWT_REFRESH_EXPIRES_IN` - `604800` (7 días)
+### Cómo Configurar Variables de Entorno en Render:
+
+1. Ve a tu servicio en el dashboard de Render
+2. Haz clic en **"Environment"** en el menú lateral
+3. Haz clic en **"Add Environment Variable"**
+4. Agrega cada una de las siguientes variables:
+
+### Variables Requeridas:
+
+| Variable | Descripción | Ejemplo | Requerido |
+|----------|-------------|----------|------------|
+| `DATABASE_URL` | URL de conexión a PostgreSQL | `postgresql://user:pass@host:5432/dbname` | ✅ Sí |
+| `JWT_SECRET` | Secreto para JWT (mínimo 32 caracteres) | `tu-secreto-super-seguro-de-al-menos-32-caracteres` | ✅ Sí |
+| `JWT_REFRESH_SECRET` | Secreto para refresh tokens (mínimo 32 caracteres) | `otro-secreto-super-seguro-de-al-menos-32-caracteres` | ✅ Sí |
+| `FRONTEND_URL` | URL de tu frontend | `https://tu-frontend.onrender.com` o `http://localhost:5173` | ✅ Sí |
+| `NODE_ENV` | Ambiente de ejecución | `production` | ⚠️ Opcional (default: development) |
+| `PORT` | Puerto del servidor | `5000` o dejar vacío (Render lo asigna) | ⚠️ Opcional (default: 5000) |
+| `JWT_EXPIRES_IN` | Tiempo de expiración del JWT | `3600` | ⚠️ Opcional (default: 3600) |
+| `JWT_REFRESH_EXPIRES_IN` | Tiempo de expiración del refresh token | `604800` | ⚠️ Opcional (default: 604800) |
+
+### Generar Secretos Seguros:
+
+Puedes generar secretos seguros usando:
+
+```bash
+# En PowerShell (Windows)
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+
+# En Linux/Mac
+openssl rand -base64 32
+```
+
+O simplemente usa una cadena aleatoria de al menos 32 caracteres.
 
 ## 📝 Notas Importantes
 
@@ -61,7 +86,16 @@ Si el build falla:
 - Verifica que todas las dependencias estén instaladas
 
 Si el servidor no inicia:
-- Verifica las variables de entorno
-- Revisa los logs en Render
-- Asegúrate de que la base de datos esté accesible
+- **Verifica las variables de entorno**: Asegúrate de que todas las variables requeridas estén configuradas en Render
+- **Revisa los logs en Render**: Los logs mostrarán exactamente qué variable falta
+- **Asegúrate de que la base de datos esté accesible**: Verifica que `DATABASE_URL` sea correcta
+- **Verifica que los secretos tengan al menos 32 caracteres**: `JWT_SECRET` y `JWT_REFRESH_SECRET` deben tener mínimo 32 caracteres
+
+### Error Común: "ZodError: Required"
+
+Si ves este error, significa que faltan variables de entorno. Verifica que hayas configurado:
+- ✅ `DATABASE_URL`
+- ✅ `JWT_SECRET` (mínimo 32 caracteres)
+- ✅ `JWT_REFRESH_SECRET` (mínimo 32 caracteres)
+- ✅ `FRONTEND_URL`
 
