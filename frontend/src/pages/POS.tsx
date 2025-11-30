@@ -38,7 +38,7 @@ export default function POS() {
   const [productosMostrados, setProductosMostrados] = useState<Producto[]>([]);
   const [vistaActual, setVistaActual] = useState<'productos' | 'combos'>('productos');
   const [busqueda, setBusqueda] = useState('');
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('');
+  const [categoriaSeleccionada] = useState<string>('');
   const [carrito, setCarrito] = useState<CarritoItem[]>([]);
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [busquedaCliente, setBusquedaCliente] = useState('');
@@ -140,7 +140,7 @@ export default function POS() {
     }
   }, [busqueda, productos]);
 
-  const categorias = Array.from(new Set(productos.map((p) => p.categoria).filter((cat): cat is string => Boolean(cat)))).sort();
+  // const categorias = Array.from(new Set(productos.map((p) => p.categoria).filter((cat): cat is string => Boolean(cat)))).sort();
 
   useEffect(() => {
     // Mostrar productos según búsqueda o categoría
