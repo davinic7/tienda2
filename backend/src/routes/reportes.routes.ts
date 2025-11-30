@@ -151,14 +151,29 @@ router.get('/productos-mas-vendidos', filterByLocal, async (req, res, next) => {
       montoTotal: number;
     }>();
 
-    ventas.forEach((venta: { detalles: Array<{ productoId: string; cantidad: number; precio: number | string | null }> }) => {
-      venta.detalles.forEach((detalle: { productoId: string; cantidad: number; precio: number | string | null }) => {
+    type VentaConDetalles = {
+      detalles: Array<{ 
+        productoId: string; 
+        cantidad: number; 
+        precioUnitario: number | string | null;
+        subtotal: number | string | null;
+        producto: {
+          id: string;
+          nombre: string;
+          codigoBarras: string | null;
+          categoria: string | null;
+        };
+      }>;
+    };
+
+    ventas.forEach((venta: VentaConDetalles) => {
+      venta.detalles.forEach((detalle: VentaConDetalles['detalles'][0]) => {
         const key = detalle.productoId;
         const existente = productosMap.get(key);
 
         if (existente) {
           existente.cantidadTotal += detalle.cantidad;
-          existente.montoTotal += Number(detalle.subtotal);
+          existente.montoTotal += Number(detalle.subtotal || 0);
         } else {
           productosMap.set(key, {
             productoId: detalle.producto.id,
@@ -166,7 +181,7 @@ router.get('/productos-mas-vendidos', filterByLocal, async (req, res, next) => {
             codigoBarras: detalle.producto.codigoBarras,
             categoria: detalle.producto.categoria,
             cantidadTotal: detalle.cantidad,
-            montoTotal: Number(detalle.subtotal),
+            montoTotal: Number(detalle.subtotal || 0),
           });
         }
       });
@@ -381,18 +396,23 @@ router.get('/ventas-por-dia', filterByLocal, async (req, res, next) => {
     // Agrupar por día
     const ventasPorDia = new Map<string, { fecha: string; cantidad: number; total: number }>();
 
-    ventas.forEach((venta: { fecha: Date | string }) => {
+    type VentaDiaria = {
+      fecha: Date | string;
+      total: number | string | null;
+    };
+
+    ventas.forEach((venta: VentaDiaria) => {
       const fecha = new Date(venta.fecha).toISOString().split('T')[0];
       const existente = ventasPorDia.get(fecha);
 
       if (existente) {
         existente.cantidad += 1;
-        existente.total += Number(venta.total);
+        existente.total += Number(venta.total || 0);
       } else {
         ventasPorDia.set(fecha, {
           fecha,
           cantidad: 1,
-          total: Number(venta.total),
+          total: Number(venta.total || 0),
         });
       }
     });
