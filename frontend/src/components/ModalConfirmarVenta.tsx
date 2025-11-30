@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import type { Producto, Cliente, MetodoPago, Local } from '@shared/types';
+import type { Producto, Cliente, Local } from '@shared/types';
+import { MetodoPago } from '@shared/types';
 import { X, User, Plus, Printer, Check, CreditCard, DollarSign, Store, AlertCircle } from 'lucide-react';
 import { printTicket } from '@/utils/printer.util';
 
@@ -41,7 +42,7 @@ export default function ModalConfirmarVenta({
   onClienteSeleccionado,
 }: ModalConfirmarVentaProps) {
   const { user } = useAuthStore();
-  const [metodoPago, setMetodoPago] = useState<MetodoPago>('EFECTIVO');
+  const [metodoPago, setMetodoPago] = useState<MetodoPago>(MetodoPago.EFECTIVO);
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [montoOtro, setMontoOtro] = useState<string>('');
   const [cliente, setCliente] = useState<Cliente | null>(clienteActual);
@@ -137,7 +138,7 @@ export default function ModalConfirmarVenta({
     const total = calcularTotal();
 
     // Validar montos según método de pago
-    if (metodoPago === 'MIXTO') {
+    if (metodoPago === MetodoPago.MIXTO) {
       if (!montoEfectivo || !montoOtro) {
         toast.error('Para pago mixto debes especificar ambos montos');
         return;
@@ -148,7 +149,7 @@ export default function ModalConfirmarVenta({
         return;
       }
       // Permitir que sea mayor (no hay problema, solo se cobra el total)
-    } else if (metodoPago === 'EFECTIVO') {
+    } else if (metodoPago === MetodoPago.EFECTIVO) {
       if (!montoEfectivo || parseFloat(montoEfectivo) <= 0) {
         toast.error('Debes ingresar el monto recibido en efectivo');
         return;
@@ -194,10 +195,10 @@ export default function ModalConfirmarVenta({
         nombreComprador: esVentaRemota ? nombreCompradorLocal.trim() : undefined,
         localOrigenId: esVentaRemota ? localOrigen : undefined,
         metodoPago,
-        montoEfectivo: metodoPago === 'EFECTIVO' || metodoPago === 'MIXTO'
+        montoEfectivo: metodoPago === MetodoPago.EFECTIVO || metodoPago === MetodoPago.MIXTO
           ? (montoEfectivo ? parseFloat(montoEfectivo) : undefined)
           : undefined,
-        montoOtro: metodoPago === 'MIXTO' || (metodoPago !== 'EFECTIVO' && metodoPago !== 'MIXTO')
+        montoOtro: metodoPago === MetodoPago.MIXTO || (metodoPago !== MetodoPago.EFECTIVO && metodoPago !== MetodoPago.MIXTO)
           ? (montoOtro ? parseFloat(montoOtro) : undefined)
           : undefined,
         productos: carrito.map((item) => ({
@@ -224,7 +225,7 @@ export default function ModalConfirmarVenta({
 
   const imprimirTicket = () => {
     const total = calcularTotal();
-    const cambio = metodoPago === 'EFECTIVO' && montoEfectivo 
+    const cambio = metodoPago === MetodoPago.EFECTIVO && montoEfectivo 
       ? parseFloat(montoEfectivo) - total 
       : undefined;
 
@@ -548,7 +549,7 @@ export default function ModalConfirmarVenta({
               </div>
 
               {/* Montos según método de pago */}
-              {metodoPago === 'EFECTIVO' && (
+              {metodoPago === MetodoPago.EFECTIVO && (
                 <div className="space-y-3">
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="flex justify-between items-center mb-2">
@@ -599,7 +600,7 @@ export default function ModalConfirmarVenta({
                 </div>
               )}
 
-              {metodoPago === 'MIXTO' && (
+              {metodoPago === MetodoPago.MIXTO && (
                 <div className="space-y-3">
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="flex justify-between items-center">
@@ -803,13 +804,13 @@ export default function ModalConfirmarVenta({
                   <div className="text-xl font-bold print:text-lg">
                     TOTAL: ${calcularTotal().toFixed(2)}
                   </div>
-                  {metodoPago === 'MIXTO' && montoEfectivo && montoOtro && (
+                  {metodoPago === MetodoPago.MIXTO && montoEfectivo && montoOtro && (
                     <div className="text-sm text-gray-600 mt-2 print:text-xs">
                       <div>Efectivo: ${parseFloat(montoEfectivo).toFixed(2)}</div>
                       <div>Otro: ${parseFloat(montoOtro).toFixed(2)}</div>
                     </div>
                   )}
-                  {metodoPago === 'EFECTIVO' && montoEfectivo && parseFloat(montoEfectivo) > calcularTotal() && (
+                  {metodoPago === MetodoPago.EFECTIVO && montoEfectivo && parseFloat(montoEfectivo) > calcularTotal() && (
                     <div className="text-sm text-gray-600 mt-2 print:text-xs">
                       <div>Recibido: ${parseFloat(montoEfectivo).toFixed(2)}</div>
                       <div>Cambio: ${(parseFloat(montoEfectivo) - calcularTotal()).toFixed(2)}</div>

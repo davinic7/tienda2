@@ -319,7 +319,7 @@ export default function Productos() {
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-semibold text-gray-900 flex-1">{producto.nombre}</h3>
                     {precioAprobado ? (
-                      <CheckCircle className="w-5 h-5 text-green-500 ml-2" title="Precio aprobado" />
+                        <CheckCircle className="w-5 h-5 text-green-500 ml-2" />
                     ) : (
                       <AlertCircle className="w-5 h-5 text-yellow-500 ml-2" title="Precio pendiente de aprobación" />
                     )}

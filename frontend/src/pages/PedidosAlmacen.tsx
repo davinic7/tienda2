@@ -17,14 +17,21 @@ import {
 } from 'lucide-react';
 
 interface PedidoCompleto extends PedidoAlmacen {
+  id: string;
+  fechaSolicitud: string;
+  fechaAutorizacion?: string | null;
+  estado: EstadoPedido;
+  observaciones?: string | null;
   local?: Local;
   solicitante?: any;
   autorizador?: any;
   detalles?: Array<{
     id: string;
+    pedidoId: string;
     productoId: string;
     cantidad: number;
     cantidadProcesada: number;
+    createdAt: string;
     producto?: Producto;
   }>;
 }
