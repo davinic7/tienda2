@@ -32,7 +32,7 @@ export async function verificarVencimientos() {
       },
     });
 
-    for (const producto of productosVencimientos) {
+    for (const producto of productosVencimiento) {
       for (const stock of producto.stocks) {
         // Verificar si ya existe una notificación reciente para este producto y local
         const notificacionExistente = await prisma.notificacion.findFirst({

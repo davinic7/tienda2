@@ -6,7 +6,7 @@ import { prisma } from '../config/database';
 declare global {
   namespace Express {
     interface Request {
-      user?: TokenPayload & { id: string };
+      user?: TokenPayload & { id: string; nombre?: string };
     }
   }
 }
@@ -46,6 +46,7 @@ export const authenticate = async (
         username: user.username,
         role: user.role,
         localId: user.localId,
+        nombre: (user as any).nombre || user.username,
       };
 
       next();

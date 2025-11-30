@@ -74,7 +74,7 @@ router.get('/ventas', filterByLocal, async (req, res, next) => {
 
     // Calcular estadísticas
     const totalVentas = ventas.length;
-    const totalMonto = ventas.reduce((sum, v) => sum + Number(v.total), 0);
+    const totalMonto = ventas.reduce((sum: number, v) => sum + Number(v.total), 0);
     const promedioVenta = totalVentas > 0 ? totalMonto / totalVentas : 0;
 
     res.json({
@@ -448,7 +448,7 @@ router.get('/ventas-por-metodo-pago', filterByLocal, async (req, res, next) => {
       },
     });
 
-    const resultado = ventas.map((v) => ({
+    const resultado = ventas.map((v: any) => ({
       metodoPago: v.metodoPago,
       cantidad: v._count.id,
       total: Number(v._sum.total || 0),

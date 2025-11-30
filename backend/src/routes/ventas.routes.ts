@@ -161,7 +161,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
           // Devolver información de disponibilidad en otros locales
           res.status(400).json({
             error: `Stock insuficiente en tu local. Disponible: ${stockDisponible}`,
-            disponibleEnOtrosLocales: otrosStocks.map(s => ({
+            disponibleEnOtrosLocales: otrosStocks.map((s) => ({
               localId: s.localId,
               localNombre: s.local.nombre,
               cantidad: s.cantidad,
@@ -192,7 +192,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
       const precioPorCantidad = calcularPrecioPorCantidad(
         precioUnitario,
         detalle.cantidad,
-        producto.preciosPorCantidad.map(p => ({
+        producto.preciosPorCantidad.map((p) => ({
           cantidad: p.cantidad,
           precio: p.precio,
         }))
@@ -361,7 +361,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
         await crearNotificacion({
           tipo: 'VENTA_REMOTA',
           titulo: `Venta remota realizada`,
-          mensaje: `El vendedor ${user.nombre} realizó una venta remota por $${venta.total.toFixed(2)}${data.nombreComprador ? ` a ${data.nombreComprador}` : ''}. Productos vendidos desde ${localOrigen.nombre}.`,
+          mensaje: `El vendedor ${(user as any).nombre || user.username || user.id} realizó una venta remota por $${venta.total.toFixed(2)}${data.nombreComprador ? ` a ${data.nombreComprador}` : ''}. Productos vendidos desde ${localOrigen.nombre}.`,
           localId: data.localOrigenId,
           ventaId: venta.id,
         });
