@@ -9,7 +9,7 @@ import ModalConfirmarVenta from '@/components/ModalConfirmarVenta';
 import type { Producto, Cliente, Combo, Local } from '@shared/types';
 import { Search, ShoppingCart, User, Plus, Minus, X, Trash2, Scan, DollarSign, Package, Gift, AlertCircle, Scale } from 'lucide-react';
 import { setupBarcodeScanner } from '@/utils/scanner.util';
-import { parseWeightFromText, detectScale } from '@/utils/scale.util';
+import { detectScale } from '@/utils/scale.util';
 
 interface CarritoItem {
   producto: Producto;
@@ -140,7 +140,7 @@ export default function POS() {
     }
   }, [busqueda, productos]);
 
-  const categorias = Array.from(new Set(productos.map((p) => p.categoria).filter(Boolean))).sort();
+  const categorias = Array.from(new Set(productos.map((p) => p.categoria).filter((cat): cat is string => Boolean(cat)))).sort();
 
   useEffect(() => {
     // Mostrar productos según búsqueda o categoría
@@ -364,7 +364,7 @@ export default function POS() {
       const producto = productos.find((p: Producto) => p.id === item.productoId);
       if (producto) {
         const precioUnitario = Number(producto.precioFinal || producto.precio || 0);
-        const precioCombo = Number(combo.precioPromocional) / combo.productos.reduce((sum: number, p: { cantidad: number }) => sum + p.cantidad, 0);
+        const precioCombo = Number(combo.precioPromocional) / (combo.productos?.reduce((sum: number, p: { cantidad: number }) => sum + p.cantidad, 0) || 1);
         const precioFinal = precioCombo < precioUnitario ? precioCombo : precioUnitario;
         
         const itemExistente = carrito.find((item) => item.producto.id === producto.id);

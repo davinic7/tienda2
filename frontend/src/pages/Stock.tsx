@@ -6,7 +6,14 @@ import Layout from '@/components/Layout';
 import type { Stock, Producto, Local } from '@shared/types';
 import { Package, AlertTriangle, TrendingUp, TrendingDown, Edit2, Filter } from 'lucide-react';
 
-interface StockCompleto extends Stock {
+interface StockCompleto {
+  id: string;
+  productoId: string;
+  localId: string;
+  cantidad: number;
+  stockMinimo: number;
+  createdAt: string;
+  updatedAt: string;
   producto: Producto;
   local: Local;
 }

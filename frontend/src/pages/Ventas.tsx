@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { Venta } from '@shared/types';
 import { MetodoPago } from '@shared/types';
-import { Search, Calendar, FileText, Eye, X, Filter, Printer } from 'lucide-react';
+import { FileText, Eye, X, Printer } from 'lucide-react';
 
 export default function Ventas() {
   const { user } = useAuthStore();
@@ -399,7 +399,7 @@ export default function Ventas() {
                     <div>
                       <p className="text-sm text-gray-600 mb-2">Productos</p>
                       <div className="space-y-2">
-                        {ventaSeleccionada.detalles?.map((detalle) => (
+                        {ventaSeleccionada.detalles?.map((detalle: { id: string; producto?: { nombre?: string }; cantidad: number; precioUnitario: number; subtotal: number }) => (
                           <div
                             key={detalle.id}
                             className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"

@@ -34,15 +34,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function VendedorOnlyRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
-
-  if (user?.role !== 'VENDEDOR') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <>{children}</>;
-}
 
 function App() {
   const { isAuthenticated } = useAuthStore();

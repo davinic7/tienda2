@@ -6,8 +6,15 @@ import Layout from '@/components/Layout';
 import type { StockDeposito, Deposito, Producto } from '@shared/types';
 import { Search, Package, Warehouse, AlertTriangle, Edit, Plus } from 'lucide-react';
 
-interface StockDepositoCompleto extends StockDeposito {
-  producto?: any;
+interface StockDepositoCompleto {
+  id: string;
+  productoId: string;
+  depositoId: string;
+  cantidad: number;
+  stockMinimo: number;
+  createdAt: string;
+  updatedAt: string;
+  producto?: Producto;
   deposito?: Deposito;
 }
 
@@ -90,19 +97,19 @@ export default function StockDeposito() {
     }
   };
 
-  const cargarAlertasStock = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (depositoSeleccionado) params.append('depositoId', depositoSeleccionado);
-
-      const response = await api.get<StockDepositoCompleto[]>(
-        `/stock-deposito/alerts/bajo-stock?${params.toString()}`
-      );
-      return response.data;
-    } catch (error) {
-      return [];
-    }
-  };
+  // Función eliminada - no se usa
+  // const cargarAlertasStock = async () => {
+  //   try {
+  //     const params = new URLSearchParams();
+  //     if (depositoSeleccionado) params.append('depositoId', depositoSeleccionado);
+  //     const response = await api.get<StockDepositoCompleto[]>(
+  //       `/stock-deposito/alerts/bajo-stock?${params.toString()}`
+  //     );
+  //     return response.data;
+  //   } catch (error) {
+  //     return [];
+  //   }
+  // };
 
   const actualizarStock = async (stockId: string, cantidad: number, stockMinimo: number) => {
     try {

@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
-import { ShoppingCart, Lock, User } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
 const loginSchema = z.object({
   username: z.string().min(3, 'El usuario debe tener al menos 3 caracteres'),

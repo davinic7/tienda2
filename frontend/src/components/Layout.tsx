@@ -16,7 +16,6 @@ import {
   Warehouse,
   PackageSearch,
   ShoppingBag,
-  DollarSign,
   Gift,
   Bell,
 } from 'lucide-react';

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { DollarSign, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { DollarSign, X, AlertCircle } from 'lucide-react';
 
 interface EstadoCaja {
   cajaAbierta: boolean;

@@ -4,7 +4,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { Combo, Producto } from '@shared/types';
-import { Plus, Search, Edit, Trash2, Package, X, ShoppingCart } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, ShoppingCart } from 'lucide-react';
 
 export default function Combos() {
   const { user } = useAuthStore();

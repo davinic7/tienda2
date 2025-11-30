@@ -4,7 +4,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { AperturaCaja } from '@shared/types';
-import { DollarSign, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { DollarSign, CheckCircle, XCircle } from 'lucide-react';
 
 interface EstadoCaja {
   cajaAbierta: boolean;
@@ -151,7 +151,7 @@ export default function AperturaCaja() {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600">Monto Inicial</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${estadoCaja.caja.montoInicial.toFixed(2)}
+                    ${estadoCaja.caja?.montoInicial.toFixed(2) || '0.00'}
                   </p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
@@ -169,7 +169,7 @@ export default function AperturaCaja() {
                 <div className="bg-purple-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600">Efectivo Esperado</p>
                   <p className="text-2xl font-bold text-purple-600">
-                    ${(estadoCaja.caja.montoInicial + estadoCaja.caja.totales.efectivo).toFixed(2)}
+                    ${estadoCaja.caja ? (estadoCaja.caja.montoInicial + estadoCaja.caja.totales.efectivo).toFixed(2) : '0.00'}
                   </p>
                 </div>
               </div>

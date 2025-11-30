@@ -6,7 +6,6 @@ import Layout from '@/components/Layout';
 import type { PedidoAlmacen, Local, Producto, EstadoPedido } from '@shared/types';
 import {
   Plus,
-  Package,
   CheckCircle,
   XCircle,
   Clock,

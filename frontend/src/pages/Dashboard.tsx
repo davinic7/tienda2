@@ -6,12 +6,12 @@ import api from '@/lib/api';
 import Layout from '@/components/Layout';
 import ModalCaja from '@/components/ModalCaja';
 import toast from 'react-hot-toast';
-import { TrendingUp, DollarSign, ShoppingCart, Users, Package, AlertCircle } from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, Package, AlertCircle } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuthStore();
   const [mostrarModalCaja, setMostrarModalCaja] = useState(false);
-  const [modoCaja, setModoCaja] = useState<'apertura' | 'cierre' | 'auto'>('auto');
+  // const [modoCaja] = useState<'apertura' | 'cierre' | 'auto'>('auto');
   const [estadisticas, setEstadisticas] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

@@ -4,7 +4,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { Notificacion, TipoNotificacion, EstadoNotificacion } from '@shared/types';
-import { Bell, CheckCircle, AlertCircle, Calendar, Package, DollarSign, ShoppingCart, X, Archive } from 'lucide-react';
+import { Bell, CheckCircle, Calendar, Package, DollarSign, ShoppingCart, Archive } from 'lucide-react';
 
 const tipoIconos = {
   CAMBIO_PRECIO: DollarSign,
@@ -21,7 +21,7 @@ const tipoColores = {
 };
 
 export default function Notificaciones() {
-  const { user } = useAuthStore();
+  // const { user } = useAuthStore();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<EstadoNotificacion | ''>('');
@@ -134,8 +134,8 @@ export default function Notificaciones() {
         ) : (
           <div className="space-y-4">
             {notificaciones.map((notificacion) => {
-              const Icono = tipoIconos[notificacion.tipo] || Bell;
-              const colorClase = tipoColores[notificacion.tipo] || 'bg-gray-100 text-gray-800';
+              const Icono = tipoIconos[notificacion.tipo as keyof typeof tipoIconos] || Bell;
+              const colorClase = tipoColores[notificacion.tipo as keyof typeof tipoColores] || 'bg-gray-100 text-gray-800';
               const fecha = new Date(notificacion.createdAt).toLocaleString('es-ES');
 
               return (

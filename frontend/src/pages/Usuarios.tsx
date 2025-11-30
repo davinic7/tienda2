@@ -4,9 +4,17 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { User, Local } from '@shared/types';
-import { Plus, Users, Edit, Shield, UserCheck, Store, Mail, UserX } from 'lucide-react';
+import { Plus, Users, Edit, Shield, UserCheck, Store } from 'lucide-react';
 
-interface UsuarioCompleto extends User {
+interface UsuarioCompleto {
+  id: string;
+  username: string;
+  nombre: string;
+  role: string;
+  localId?: string | null;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
   local?: Local;
 }
 
@@ -128,22 +136,21 @@ export default function Usuarios() {
     }
   };
 
-  const desactivarUsuario = async (id: string) => {
-    if (id === currentUser?.id) {
-      toast.error('No puedes desactivar tu propio usuario');
-      return;
-    }
-
-    if (!confirm('¿Estás seguro de desactivar este usuario?')) return;
-
-    try {
-      await api.delete(`/usuarios/${id}`);
-      toast.success('Usuario desactivado exitosamente');
-      cargarUsuarios();
-    } catch (error: any) {
-      toast.error('Error al desactivar usuario');
-    }
-  };
+  // Función eliminada - no se usa
+  // const desactivarUsuario = async (id: string) => {
+  //   if (id === currentUser?.id) {
+  //     toast.error('No puedes desactivar tu propio usuario');
+  //     return;
+  //   }
+  //   if (!confirm('¿Estás seguro de desactivar este usuario?')) return;
+  //   try {
+  //     await api.delete(`/usuarios/${id}`);
+  //     toast.success('Usuario desactivado exitosamente');
+  //     cargarUsuarios();
+  //   } catch (error: any) {
+  //     toast.error('Error al desactivar usuario');
+  //   }
+  // };
 
   if (currentUser?.role !== 'ADMIN') {
     return (

@@ -200,7 +200,7 @@ export function printESCPOS(
     metodoPago: string;
     fecha: string;
   },
-  printer?: any
+  _printer?: any
 ): void {
   // Si hay una impresora ESC/POS conectada, usar comandos nativos
   // Por ahora, usar la función de impresión estándar

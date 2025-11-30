@@ -4,7 +4,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { Producto, Local } from '@shared/types';
-import { Plus, Search, Edit, Trash2, Package, Filter, X, CheckCircle, AlertCircle, DollarSign, Settings, History } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package, Filter, X, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
 
 // Función para calcular precio sugerido
 function calcularPrecioSugerido(costo: number, iva: number, utilidad: number): number {
@@ -22,8 +22,8 @@ export default function Productos() {
   const [categoria, setCategoria] = useState('');
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mostrarModalPrecio, setMostrarModalPrecio] = useState(false);
-  const [mostrarModalPreciosCantidad, setMostrarModalPreciosCantidad] = useState(false);
-  const [mostrarModalHistorial, setMostrarModalHistorial] = useState(false);
+  // const [mostrarModalPreciosCantidad, setMostrarModalPreciosCantidad] = useState(false);
+  // const [mostrarModalHistorial, setMostrarModalHistorial] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
   const [productoEditar, setProductoEditar] = useState<Producto | null>(null);
   const [precioSugerido, setPrecioSugerido] = useState<number | null>(null);
@@ -220,7 +220,7 @@ export default function Productos() {
     }
   };
 
-  const categorias = Array.from(new Set(productos.map((p) => p.categoria).filter(Boolean)));
+  const categorias = Array.from(new Set(productos.map((p) => p.categoria).filter((cat): cat is string => Boolean(cat))));
 
   if (user?.role !== 'ADMIN') {
     return (
@@ -321,7 +321,9 @@ export default function Productos() {
                     {precioAprobado ? (
                         <CheckCircle className="w-5 h-5 text-green-500 ml-2" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-yellow-500 ml-2" title="Precio pendiente de aprobación" />
+                      <span title="Precio pendiente de aprobación">
+                        <AlertCircle className="w-5 h-5 text-yellow-500 ml-2" />
+                      </span>
                     )}
                   </div>
                   {producto.descripcion && (

@@ -4,7 +4,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { Local } from '@shared/types';
-import { Plus, Store, Edit, MapPin, Phone, Users as UsersIcon, FileText } from 'lucide-react';
+import { Plus, Store, Edit, MapPin, Phone } from 'lucide-react';
 
 export default function Locales() {
   const { user } = useAuthStore();
@@ -80,17 +80,17 @@ export default function Locales() {
     }
   };
 
-  const eliminarLocal = async (id: string) => {
-    if (!confirm('¿Estás seguro de desactivar este local?')) return;
-
-    try {
-      await api.delete(`/locales/${id}`);
-      toast.success('Local desactivado exitosamente');
-      cargarLocales();
-    } catch (error: any) {
-      toast.error('Error al desactivar local');
-    }
-  };
+  // Función eliminada - no se usa
+  // const eliminarLocal = async (id: string) => {
+  //   if (!confirm('¿Estás seguro de desactivar este local?')) return;
+  //   try {
+  //     await api.delete(`/locales/${id}`);
+  //     toast.success('Local desactivado exitosamente');
+  //     cargarLocales();
+  //   } catch (error: any) {
+  //     toast.error('Error al desactivar local');
+  //   }
+  // };
 
   if (user?.role !== 'ADMIN') {
     return (

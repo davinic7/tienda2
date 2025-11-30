@@ -198,7 +198,7 @@ export default function ModalConfirmarVenta({
         montoEfectivo: metodoPago === MetodoPago.EFECTIVO || metodoPago === MetodoPago.MIXTO
           ? (montoEfectivo ? parseFloat(montoEfectivo) : undefined)
           : undefined,
-        montoOtro: metodoPago === MetodoPago.MIXTO || (metodoPago !== MetodoPago.EFECTIVO && metodoPago !== MetodoPago.MIXTO)
+        montoOtro: (metodoPago === MetodoPago.MIXTO || (metodoPago !== MetodoPago.EFECTIVO && metodoPago !== MetodoPago.MIXTO))
           ? (montoOtro ? parseFloat(montoOtro) : undefined)
           : undefined,
         productos: carrito.map((item) => ({
