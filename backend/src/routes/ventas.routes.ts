@@ -161,7 +161,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
           // Devolver información de disponibilidad en otros locales
           res.status(400).json({
             error: `Stock insuficiente en tu local. Disponible: ${stockDisponible}`,
-            disponibleEnOtrosLocales: otrosStocks.map((s) => ({
+            disponibleEnOtrosLocales: otrosStocks.map((s: { localId: string; local: { nombre: string }; cantidad: number }) => ({
               localId: s.localId,
               localNombre: s.local.nombre,
               cantidad: s.cantidad,
@@ -192,7 +192,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
       const precioPorCantidad = calcularPrecioPorCantidad(
         precioUnitario,
         detalle.cantidad,
-        producto.preciosPorCantidad.map((p) => ({
+        producto.preciosPorCantidad.map((p: { cantidad: number; precio: number }) => ({
           cantidad: p.cantidad,
           precio: p.precio,
         }))
@@ -251,7 +251,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
     }
 
     // Crear venta con transacción
-    const venta = await prisma.$transaction(async (tx) => {
+    const venta = await prisma.$transaction(async (tx: any) => {
       // Crear la venta
       const nuevaVenta = await tx.venta.create({
         data: {
@@ -570,7 +570,7 @@ router.put('/:id/cancelar', filterByLocal, async (req, res, next) => {
     }
 
     // Restaurar stock y puntos (transacción)
-    const ventaCancelada = await prisma.$transaction(async (tx) => {
+    const ventaCancelada = await prisma.$transaction(async (tx: any) => {
       // Restaurar stock
       for (const detalle of venta.detalles) {
         await tx.stock.updateMany({

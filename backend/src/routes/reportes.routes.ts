@@ -74,7 +74,7 @@ router.get('/ventas', filterByLocal, async (req, res, next) => {
 
     // Calcular estadísticas
     const totalVentas = ventas.length;
-    const totalMonto = ventas.reduce((sum: number, v) => sum + Number(v.total), 0);
+    const totalMonto = ventas.reduce((sum: number, v: { total: number | string | null }) => sum + Number(v.total), 0);
     const promedioVenta = totalVentas > 0 ? totalMonto / totalVentas : 0;
 
     res.json({
@@ -151,8 +151,8 @@ router.get('/productos-mas-vendidos', filterByLocal, async (req, res, next) => {
       montoTotal: number;
     }>();
 
-    ventas.forEach((venta) => {
-      venta.detalles.forEach((detalle) => {
+    ventas.forEach((venta: { detalles: Array<{ productoId: string; cantidad: number; precio: number | string | null }> }) => {
+      venta.detalles.forEach((detalle: { productoId: string; cantidad: number; precio: number | string | null }) => {
         const key = detalle.productoId;
         const existente = productosMap.get(key);
 
@@ -263,8 +263,8 @@ router.get('/resumen', filterByLocal, async (req, res, next) => {
           },
         });
         let total = 0;
-        ventas.forEach((v) => {
-          v.detalles.forEach((d) => {
+        ventas.forEach((v: { detalles: Array<{ cantidad: number }> }) => {
+          v.detalles.forEach((d: { cantidad: number }) => {
             total += d.cantidad;
           });
         });
@@ -297,15 +297,15 @@ router.get('/resumen', filterByLocal, async (req, res, next) => {
             _sum: {
               total: true,
             },
-          }).then(async (result) => {
+          }).then(async (result: Array<{ localId: string; _count: { id: number }; _sum: { total: number | null } }>) => {
             const locales = await prisma.local.findMany({
-              where: { id: { in: result.map((r) => r.localId) } },
+              where: { id: { in: result.map((r: { localId: string }) => r.localId) } },
               select: { id: true, nombre: true },
             });
 
-            return result.map((r) => ({
+            return result.map((r: { localId: string; _count: { id: number }; _sum: { total: number | null } }) => ({
               localId: r.localId,
-              localNombre: locales.find((l) => l.id === r.localId)?.nombre || 'Desconocido',
+              localNombre: locales.find((l: { id: string; nombre: string }) => l.id === r.localId)?.nombre || 'Desconocido',
               cantidadVentas: r._count.id,
               montoTotal: Number(r._sum.total || 0),
             }));
@@ -381,7 +381,7 @@ router.get('/ventas-por-dia', filterByLocal, async (req, res, next) => {
     // Agrupar por día
     const ventasPorDia = new Map<string, { fecha: string; cantidad: number; total: number }>();
 
-    ventas.forEach((venta) => {
+    ventas.forEach((venta: { fecha: Date | string }) => {
       const fecha = new Date(venta.fecha).toISOString().split('T')[0];
       const existente = ventasPorDia.get(fecha);
 
@@ -501,7 +501,7 @@ router.get('/ventas-por-vendedor', filterByLocal, async (req, res, next) => {
 
     const vendedores = await prisma.user.findMany({
       where: {
-        id: { in: ventas.map((v) => v.vendedorId) },
+        id: { in: ventas.map((v: { vendedorId: string }) => v.vendedorId) },
       },
       select: {
         id: true,
@@ -509,9 +509,9 @@ router.get('/ventas-por-vendedor', filterByLocal, async (req, res, next) => {
       },
     });
 
-    const resultado = ventas.map((v) => ({
+    const resultado = ventas.map((v: { vendedorId: string; _count: { id: number }; _sum: { total: number | null } }) => ({
       vendedorId: v.vendedorId,
-      vendedorNombre: vendedores.find((vend) => vend.id === v.vendedorId)?.nombre || 'Desconocido',
+      vendedorNombre: vendedores.find((vend: { id: string; nombre: string | null }) => vend.id === v.vendedorId)?.nombre || 'Desconocido',
       cantidad: v._count.id,
       total: Number(v._sum.total || 0),
     }));

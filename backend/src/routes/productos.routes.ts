@@ -89,7 +89,7 @@ router.get('/', filterByLocal, async (req, res, next) => {
     });
 
     // Calcular precio final para cada producto según el local
-    const productosConPrecio = productos.map((producto) => {
+    const productosConPrecio = productos.map((producto: any) => {
       let precioFinal = producto.precio ? Number(producto.precio) : null;
       
       // Si hay precio local aprobado, usarlo
