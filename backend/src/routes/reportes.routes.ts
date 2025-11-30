@@ -448,7 +448,7 @@ router.get('/ventas-por-metodo-pago', filterByLocal, async (req, res, next) => {
       },
     });
 
-    const resultado = ventas.map((v: any) => ({
+    const resultado = ventas.map((v: { metodoPago: string; _count: { id: number }; _sum: { total: number | null } }) => ({
       metodoPago: v.metodoPago,
       cantidad: v._count.id,
       total: Number(v._sum.total || 0),
