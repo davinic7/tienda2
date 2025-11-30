@@ -84,6 +84,7 @@ export interface Producto {
   preciosPorCantidad?: PrecioPorCantidad[];
   precioFinal?: number | null;
   precioSugerido?: number | null;
+  stockDisponible?: number;
 }
 
 export interface Stock {
