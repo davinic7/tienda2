@@ -3,14 +3,14 @@ import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
-import type { User, Local } from '@shared/types';
+import type { Local, Role } from '@shared/types';
 import { Plus, Users, Edit, Shield, UserCheck, Store } from 'lucide-react';
 
 interface UsuarioCompleto {
   id: string;
   username: string;
   nombre: string;
-  role: string;
+  role: Role;
   localId?: string | null;
   activo: boolean;
   createdAt: string;

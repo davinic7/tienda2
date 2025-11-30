@@ -38,7 +38,7 @@ export default function POS() {
   const [productosMostrados, setProductosMostrados] = useState<Producto[]>([]);
   const [vistaActual, setVistaActual] = useState<'productos' | 'combos'>('productos');
   const [busqueda, setBusqueda] = useState('');
-  // const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('');
   const [carrito, setCarrito] = useState<CarritoItem[]>([]);
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [busquedaCliente, setBusquedaCliente] = useState('');

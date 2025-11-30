@@ -179,7 +179,7 @@ export default function Dashboard() {
       buttonText: 'Gestionar Caja',
       visible: user?.role === 'VENDEDOR',
       onClick: () => {
-        setModoCaja('auto');
+        // setModoCaja('auto');
         setMostrarModalCaja(true);
       },
     },
