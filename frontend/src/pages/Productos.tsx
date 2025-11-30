@@ -360,21 +360,18 @@ export default function Productos() {
                       <button
                         onClick={() => abrirModalAprobarPrecio(producto)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Aprobar/Ajustar precio"
                       >
                         <DollarSign className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => abrirModalEditar(producto)}
                         className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Editar"
                       >
                         <Edit className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => eliminarProducto(producto.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Eliminar"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
