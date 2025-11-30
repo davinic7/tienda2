@@ -1,0 +1,121 @@
+═══════════════════════════════════════════════════════════════
+  SUBIR PROYECTO A GITHUB - INSTRUCCIONES PASO A PASO
+═══════════════════════════════════════════════════════════════
+
+✅ Scripts creados y listos para usar.
+
+═══════════════════════════════════════════════════════════════
+  PASO 1: INSTALAR GIT
+═══════════════════════════════════════════════════════════════
+
+1. Descarga Git desde: https://git-scm.com/download/win
+   (El script ya abrió esta página)
+
+2. Ejecuta el instalador descargado
+
+3. Durante la instalación:
+   ✅ Usa las opciones por defecto
+   ✅ IMPORTANTE: Marca "Add Git to PATH"
+   ✅ Click en "Next" hasta completar
+
+4. Después de instalar:
+   ⚠️  CIERRA esta terminal
+   ⚠️  Abre una NUEVA terminal (PowerShell)
+   ⚠️  Ve al proyecto: cd "C:\Users\davin\OneDrive\Escritorio\Proyectos personales\tienda\LaTienda"
+
+═══════════════════════════════════════════════════════════════
+  PASO 2: EJECUTAR SCRIPT DE SUBIDA
+═══════════════════════════════════════════════════════════════
+
+En la nueva terminal, ejecuta:
+
+    .\SUBIR_A_GITHUB.ps1
+
+O si hay problemas con la política de ejecución:
+
+    powershell -ExecutionPolicy Bypass -File .\SUBIR_A_GITHUB.ps1
+
+═══════════════════════════════════════════════════════════════
+  QUÉ HARÁ EL SCRIPT:
+═══════════════════════════════════════════════════════════════
+
+✅ Inicializar el repositorio Git
+✅ Configurar Git (usuario, email)
+✅ Agregar todos los archivos (excluyendo .env)
+✅ Verificar que NO se suban archivos sensibles
+✅ Crear commit inicial con descripción completa
+✅ Configurar rama principal como 'main'
+
+Después te pedirá:
+📝 Tu usuario de GitHub
+🔗 Te guiará para crear el repositorio en GitHub
+📤 Subirá el código automáticamente
+
+═══════════════════════════════════════════════════════════════
+  PASO 3: CREAR REPOSITORIO EN GITHUB
+═══════════════════════════════════════════════════════════════
+
+Cuando el script te lo indique:
+
+1. Ve a: https://github.com/new
+
+2. Configura el repositorio:
+   - Repository name: LaTienda
+   - Description: Sistema POS Multi-local - Gestión de inventario y ventas
+   - Visibility: Private (recomendado) o Public
+   - ❌ NO marques "Initialize with README"
+   - ❌ NO marques "Add .gitignore"
+   - ❌ NO marques "Choose a license"
+
+3. Click en "Create repository"
+
+4. Regresa a la terminal y presiona Enter cuando el script lo pida
+
+═══════════════════════════════════════════════════════════════
+  PASO 4: AUTENTICACIÓN (SI SE REQUIERE)
+═══════════════════════════════════════════════════════════════
+
+Si GitHub te pide autenticación:
+
+1. Ve a: https://github.com/settings/tokens
+
+2. Click: "Generate new token" → "Generate new token (classic)"
+
+3. Configura:
+   - Note: LaTienda Local
+   - Expiration: 90 days (o el que prefieras)
+   - Permisos: Marca "repo" (todos los permisos)
+
+4. Click "Generate token"
+
+5. COPIA el token (solo se muestra una vez)
+
+6. Cuando Git te pida credenciales:
+   - Usuario: tu-usuario-de-github
+   - Contraseña: PEGA EL TOKEN aquí
+
+═══════════════════════════════════════════════════════════════
+  VERIFICACIÓN FINAL
+═══════════════════════════════════════════════════════════════
+
+Después de subir, ve a tu repositorio y verifica:
+
+✅ Archivos subidos correctamente
+✅ NO hay archivos .env (no deben estar)
+✅ SÍ hay archivos .env.example (si existen)
+
+Tu proyecto estará en:
+https://github.com/tu-usuario/LaTienda
+
+═══════════════════════════════════════════════════════════════
+  ARCHIVOS DE AYUDA DISPONIBLES
+═══════════════════════════════════════════════════════════════
+
+- INSTALAR_GIT.bat          → Instala Git
+- SUBIR_A_GITHUB.ps1        → Sube todo a GitHub
+- COMANDOS_GITHUB.md        → Comandos manuales detallados
+- README_GITHUB.md          → Guía completa con opciones
+- INSTRUCCIONES_SUBIR_GITHUB.txt → Este archivo
+
+═══════════════════════════════════════════════════════════════
+

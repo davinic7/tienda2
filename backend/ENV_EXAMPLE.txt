@@ -1,0 +1,21 @@
+# Database (PostgreSQL)
+# Formato: postgresql://usuario:password@host:puerto/nombre_base_datos
+# Ejemplo local: postgresql://postgres:password@localhost:5432/tienda_pos
+# Ejemplo con Supabase/Railway/Render: usar la URL de conexión proporcionada
+DATABASE_URL="postgresql://postgres:password@localhost:5432/tienda_pos"
+
+# JWT Secrets
+JWT_SECRET="cambiar-por-secreto-seguro-en-produccion"
+JWT_REFRESH_SECRET="cambiar-por-refresh-secreto-seguro-en-produccion"
+
+# Server
+PORT=5000
+NODE_ENV=development
+
+# CORS
+FRONTEND_URL="http://localhost:5173"
+
+# JWT Expiration (en segundos)
+JWT_EXPIRES_IN=3600
+JWT_REFRESH_EXPIRES_IN=604800
+

@@ -1,0 +1,489 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VENDEDOR
+}
+
+enum EstadoVenta {
+  PENDIENTE
+  COMPLETADA
+  CANCELADA
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  AUTORIZADO
+  RECHAZADO
+  PROCESADO
+  CANCELADO
+}
+
+enum TipoMovimiento {
+  ENTRADA_DEPOSITO
+  SALIDA_DEPOSITO
+  TRANSFERENCIA_LOCAL
+}
+
+enum MetodoPago {
+  EFECTIVO
+  CREDITO
+  MIXTO
+  DEBITO
+  QR
+  TARJETA_CREDITO
+  TRANSFERENCIA
+}
+
+enum EstadoCaja {
+  ABIERTA
+  CERRADA
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      Role
+  localId   String?
+  nombre    String
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  local     Local?   @relation(fields: [localId], references: [id])
+  ventas    Venta[]
+  auditLogs AuditLog[]
+  pedidosSolicitados PedidoAlmacen[] @relation("PedidoSolicitante")
+  pedidosAutorizados PedidoAlmacen[] @relation("PedidoAutorizador")
+  movimientos MovimientoStock[]
+  aperturasCaja AperturaCaja[]
+  historialPrecios HistorialPrecio[]
+
+  @@index([localId])
+  @@index([username])
+}
+
+model Local {
+  id        String   @id @default(uuid())
+  nombre    String
+  direccion String?
+  telefono  String?
+  activo    Boolean  @default(true)
+  porcentajeUtilidadDefault Decimal @default(30) @db.Decimal(5, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usuarios  User[]
+  stocks    Stock[]
+  ventas    Venta[]
+  ventasRemotas Venta[] @relation("VentaRemota")
+  pedidos   PedidoAlmacen[]
+  movimientosOrigen MovimientoStock[] @relation("MovimientoOrigen")
+  movimientosDestino MovimientoStock[] @relation("MovimientoDestino")
+  aperturasCaja AperturaCaja[]
+  preciosLocales PrecioLocal[]
+  notificaciones Notificacion[]
+
+  @@index([nombre])
+}
+
+model Producto {
+  id          String   @id @default(uuid())
+  nombre      String
+  descripcion String?  @db.Text
+  codigo      String?  @unique
+  codigoBarras String? @unique
+  costo       Decimal  @db.Decimal(10, 2)
+  iva         Decimal  @default(21) @db.Decimal(5, 2)
+  porcentajeUtilidadDefault Decimal @default(30) @db.Decimal(5, 2)
+  precio      Decimal? @db.Decimal(10, 2)
+  precioAprobado Boolean @default(false)
+  categoria   String?
+  unidadMedida String? @default("UNIDAD")
+  fechaVencimiento DateTime?
+  imagenUrl   String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stocks      Stock[]
+  stocksDeposito StockDeposito[]
+  ventaDetalles VentaDetalle[]
+  movimientos MovimientoStock[]
+  pedidosDetalle PedidoAlmacenDetalle[]
+  preciosPorCantidad PrecioPorCantidad[]
+  preciosLocales PrecioLocal[]
+  historialPrecios HistorialPrecio[]
+  combosProductos ComboProducto[]
+
+  @@index([nombre])
+  @@index([codigo])
+  @@index([codigoBarras])
+  @@index([categoria])
+  @@index([fechaVencimiento])
+}
+
+model Stock {
+  id           String   @id @default(uuid())
+  productoId   String
+  localId      String
+  cantidad     Int      @default(0)
+  stockMinimo  Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  producto     Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  local        Local    @relation(fields: [localId], references: [id], onDelete: Cascade)
+
+  @@unique([productoId, localId])
+  @@index([localId])
+  @@index([productoId])
+}
+
+model Deposito {
+  id        String   @id @default(uuid())
+  nombre    String  
+  direccion String? 
+  telefono  String? 
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stocks     StockDeposito[]
+  pedidos    PedidoAlmacen[]
+  movimientos MovimientoStock[]
+
+  @@index([nombre])
+}
+
+model StockDeposito {
+  id           String   @id @default(uuid())
+  productoId   String  
+  depositoId   String  
+  cantidad     Int      @default(0)
+  stockMinimo  Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  producto     Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  deposito     Deposito @relation(fields: [depositoId], references: [id], onDelete: Cascade)
+
+  @@unique([productoId, depositoId])
+  @@index([depositoId])
+  @@index([productoId])
+}
+
+model PedidoAlmacen {
+  id           String        @id @default(uuid())
+  localId      String       
+  depositoId   String?      
+  solicitanteId String      
+  autorizadorId String?     
+  estado       EstadoPedido  @default(PENDIENTE)
+  observaciones String?      @db.Text
+  fechaSolicitud DateTime    @default(now())
+  fechaAutorizacion DateTime?
+  fechaProcesamiento DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  local        Local         @relation(fields: [localId], references: [id])
+  deposito     Deposito?     @relation(fields: [depositoId], references: [id])
+  solicitante  User          @relation("PedidoSolicitante", fields: [solicitanteId], references: [id])
+  autorizador  User?         @relation("PedidoAutorizador", fields: [autorizadorId], references: [id])
+  detalles     PedidoAlmacenDetalle[]
+  movimiento   MovimientoStock?
+
+  @@index([localId])
+  @@index([solicitanteId])
+  @@index([estado])
+  @@index([fechaSolicitud])
+}
+
+model PedidoAlmacenDetalle {
+  id           String   @id @default(uuid())
+  pedidoId     String  
+  productoId   String  
+  cantidad     Int
+  cantidadProcesada Int @default(0)
+  createdAt    DateTime @default(now())
+
+  pedido       PedidoAlmacen @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  producto     Producto      @relation(fields: [productoId], references: [id])
+
+  @@index([pedidoId])
+  @@index([productoId])
+}
+
+model MovimientoStock {
+  id           String          @id @default(uuid())
+  tipo         TipoMovimiento
+  productoId   String         
+  depositoId   String?        
+  localOrigenId String?       
+  localDestinoId String?      
+  cantidad     Int
+  motivo       String?        
+  usuarioId    String         
+  pedidoId     String?         @unique
+  fecha        DateTime        @default(now())
+  createdAt    DateTime        @default(now())
+
+  producto     Producto        @relation(fields: [productoId], references: [id])
+  deposito     Deposito?       @relation(fields: [depositoId], references: [id])
+  localOrigen  Local?          @relation("MovimientoOrigen", fields: [localOrigenId], references: [id])
+  localDestino Local?          @relation("MovimientoDestino", fields: [localDestinoId], references: [id])
+  usuario      User            @relation(fields: [usuarioId], references: [id])
+  pedido       PedidoAlmacen?  @relation(fields: [pedidoId], references: [id])
+
+  @@index([productoId])
+  @@index([depositoId])
+  @@index([localOrigenId])
+  @@index([localDestinoId])
+  @@index([fecha])
+}
+
+model AperturaCaja {
+  id           String     @id @default(uuid())
+  vendedorId   String    
+  localId      String    
+  fechaApertura DateTime  @default(now())
+  montoInicial Decimal    @db.Decimal(10, 2)
+  fechaCierre  DateTime? 
+  montoFinal   Decimal?   @db.Decimal(10, 2)
+  montoEsperado Decimal?  @db.Decimal(10, 2)
+  diferencia   Decimal?   @db.Decimal(10, 2)
+  observaciones String?   @db.Text
+  estado       EstadoCaja @default(ABIERTA)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  vendedor     User       @relation(fields: [vendedorId], references: [id])
+  local        Local      @relation(fields: [localId], references: [id])
+  ventas       Venta[]
+
+  @@index([vendedorId])
+  @@index([localId])
+  @@index([estado])
+  @@index([fechaApertura])
+  @@unique([vendedorId, estado])
+}
+
+model Cliente {
+  id           String   @id @default(uuid())
+  nombre       String  
+  email        String?  @unique
+  telefono     String? 
+  puntos       Int      @default(0)
+  fechaRegistro DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ventas       Venta[]
+
+  @@index([nombre])
+  @@index([email])
+}
+
+model Venta {
+  id        String      @id @default(uuid())
+  localId   String     
+  localOrigenId String?
+  vendedorId String    
+  clienteId String?    
+  nombreComprador String?
+  aperturaCajaId String?
+  fecha     DateTime    @default(now())
+  total     Decimal     @db.Decimal(10, 2)
+  metodoPago MetodoPago @default(EFECTIVO)
+  montoEfectivo Decimal? @db.Decimal(10, 2)
+  montoOtro Decimal?    @db.Decimal(10, 2)
+  estado    EstadoVenta @default(COMPLETADA)
+  esVentaRemota Boolean @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  local     Local       @relation(fields: [localId], references: [id])
+  localOrigen Local?    @relation("VentaRemota", fields: [localOrigenId], references: [id])
+  vendedor  User        @relation(fields: [vendedorId], references: [id])
+  cliente   Cliente?    @relation(fields: [clienteId], references: [id])
+  aperturaCaja AperturaCaja? @relation(fields: [aperturaCajaId], references: [id])
+  detalles  VentaDetalle[]
+
+  @@index([localId])
+  @@index([localOrigenId])
+  @@index([vendedorId])
+  @@index([clienteId])
+  @@index([fecha])
+  @@index([aperturaCajaId])
+  @@index([metodoPago])
+  @@index([esVentaRemota])
+}
+
+model VentaDetalle {
+  id             String   @id @default(uuid())
+  ventaId        String  
+  productoId     String  
+  cantidad       Int
+  precioUnitario Decimal  @db.Decimal(10, 2)
+  subtotal       Decimal  @db.Decimal(10, 2)
+  createdAt      DateTime @default(now())
+
+  venta          Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  producto       Producto @relation(fields: [productoId], references: [id])
+
+  @@index([ventaId])
+  @@index([productoId])
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  userId          String  
+  accion          String  
+  tabla           String  
+  fecha           DateTime @default(now())
+  datosAnteriores Json?
+  datosNuevos     Json?
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([tabla])
+  @@index([fecha])
+}
+
+enum TipoNotificacion {
+  CAMBIO_PRECIO
+  BAJA_ROTACION
+  VENCIMIENTO
+  VENTA_REMOTA
+}
+
+enum EstadoNotificacion {
+  PENDIENTE
+  LEIDA
+  ARCHIVADA
+}
+
+model PrecioPorCantidad {
+  id          String   @id @default(uuid())
+  productoId  String
+  cantidad    Int
+  precio      Decimal  @db.Decimal(10, 2)
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  producto    Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@unique([productoId, cantidad])
+  @@index([productoId])
+}
+
+model PrecioLocal {
+  id          String   @id @default(uuid())
+  productoId  String
+  localId     String
+  porcentajeUtilidad Decimal @db.Decimal(5, 2)
+  precio      Decimal  @db.Decimal(10, 2)
+  precioAprobado Boolean @default(false)
+  aprobadoPor String?
+  fechaAprobacion DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  producto    Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  local       Local    @relation(fields: [localId], references: [id], onDelete: Cascade)
+
+  @@unique([productoId, localId])
+  @@index([productoId])
+  @@index([localId])
+}
+
+model Combo {
+  id          String   @id @default(uuid())
+  nombre      String
+  descripcion String?  @db.Text
+  precioPromocional Decimal @db.Decimal(10, 2)
+  imagenUrl   String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  productos   ComboProducto[]
+
+  @@index([nombre])
+}
+
+model ComboProducto {
+  id          String   @id @default(uuid())
+  comboId     String
+  productoId  String
+  cantidad    Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  combo       Combo    @relation(fields: [comboId], references: [id], onDelete: Cascade)
+  producto    Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@unique([comboId, productoId])
+  @@index([comboId])
+  @@index([productoId])
+}
+
+model HistorialPrecio {
+  id          String   @id @default(uuid())
+  productoId  String
+  localId     String?
+  precioAnterior Decimal? @db.Decimal(10, 2)
+  precioNuevo Decimal  @db.Decimal(10, 2)
+  porcentajeUtilidadAnterior Decimal? @db.Decimal(5, 2)
+  porcentajeUtilidadNuevo Decimal? @db.Decimal(5, 2)
+  motivo      String?  @db.Text
+  usuarioId   String
+  fecha       DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  producto    Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  local       Local?    @relation(fields: [localId], references: [id], onDelete: Cascade)
+  usuario     User      @relation(fields: [usuarioId], references: [id])
+
+  @@index([productoId])
+  @@index([localId])
+  @@index([usuarioId])
+  @@index([fecha])
+}
+
+model Notificacion {
+  id          String   @id @default(uuid())
+  tipo        TipoNotificacion
+  titulo      String
+  mensaje     String   @db.Text
+  localId     String?
+  productoId  String?
+  ventaId     String?
+  estado      EstadoNotificacion @default(PENDIENTE)
+  leidaEn     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  local       Local?   @relation(fields: [localId], references: [id], onDelete: Cascade)
+
+  @@index([localId])
+  @@index([productoId])
+  @@index([estado])
+  @@index([tipo])
+  @@index([createdAt])
+}
+

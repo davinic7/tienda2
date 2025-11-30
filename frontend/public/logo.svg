@@ -1,0 +1,14 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shadow layer (darker green behind for depth) -->
+  <rect x="22" y="22" width="156" height="156" rx="25" fill="#16a34a" opacity="0.4"/>
+  
+  <!-- Main bright green rounded square (squircle) -->
+  <rect x="15" y="15" width="160" height="160" rx="25" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+  <rect x="15" y="15" width="160" height="160" rx="25" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+  
+  <!-- "lolo" text in white with green outline -->
+  <text x="38" y="90" font-family="Arial, 'Helvetica Neue', Helvetica, sans-serif" font-size="58" font-weight="900" fill="white" stroke="#22c55e" stroke-width="2" paint-order="stroke fill" letter-spacing="0.5">lolo</text>
+  
+  <!-- "DRUGSTORE" text in black -->
+  <text x="48" y="142" font-family="Arial, 'Helvetica Neue', Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#000000" letter-spacing="2.8">DRUGSTORE</text>
+</svg>
