@@ -49,6 +49,7 @@ export default function AperturaCaja() {
       setLoading(true);
       const response = await api.get<EstadoCaja>('/caja/estado');
       setEstadoCaja(response.data);
+      // response usado
     } catch (error: any) {
       toast.error('Error al cargar estado de caja');
     } finally {
@@ -86,7 +87,7 @@ export default function AperturaCaja() {
     if (!estadoCaja?.caja) return;
 
     try {
-      const response = await api.post(`/caja/cierre/${estadoCaja.caja.id}`, {
+      await api.post(`/caja/cierre/${estadoCaja.caja.id}`, {
         montoFinal: parseFloat(montoFinal),
         observaciones: observaciones || undefined,
       });
@@ -156,13 +157,13 @@ export default function AperturaCaja() {
                 <div className="bg-green-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600">Total Ventas</p>
                   <p className="text-2xl font-bold text-green-600">
-                    ${estadoCaja.caja.totalVentas.toFixed(2)}
+                    ${estadoCaja.caja?.totalVentas.toFixed(2) || '0.00'}
                   </p>
                 </div>
                 <div className="bg-blue-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600">Cantidad Ventas</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    {estadoCaja.caja.cantidadVentas}
+                    {estadoCaja.caja?.cantidadVentas || 0}
                   </p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4">
@@ -180,56 +181,56 @@ export default function AperturaCaja() {
                   <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">Efectivo</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ${estadoCaja.caja.totales.efectivo.toFixed(2)}
+                      ${estadoCaja.caja?.totales.efectivo.toFixed(2) || '0.00'}
                     </p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">Crédito</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ${estadoCaja.caja.totales.credito.toFixed(2)}
+                      ${estadoCaja.caja?.totales.credito.toFixed(2) || '0.00'}
                     </p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">Mixto</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ${estadoCaja.caja.totales.mixto.toFixed(2)}
+                      ${estadoCaja.caja?.totales.mixto.toFixed(2) || '0.00'}
                     </p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">Débito</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ${estadoCaja.caja.totales.debito.toFixed(2)}
+                      ${estadoCaja.caja?.totales.debito.toFixed(2) || '0.00'}
                     </p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">QR</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ${estadoCaja.caja.totales.qr.toFixed(2)}
+                      ${estadoCaja.caja?.totales.qr.toFixed(2) || '0.00'}
                     </p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">Tarjeta Crédito</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ${estadoCaja.caja.totales.tarjetaCredito.toFixed(2)}
+                      ${estadoCaja.caja?.totales.tarjetaCredito.toFixed(2) || '0.00'}
                     </p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">Transferencia</p>
                     <p className="text-lg font-bold text-gray-900">
-                      ${estadoCaja.caja.totales.transferencia.toFixed(2)}
+                      ${estadoCaja.caja?.totales.transferencia.toFixed(2) || '0.00'}
                     </p>
                   </div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-xs text-gray-600">Total General</p>
                     <p className="text-lg font-bold text-green-600">
-                      ${estadoCaja.caja.totales.total.toFixed(2)}
+                      ${estadoCaja.caja?.totales.total.toFixed(2) || '0.00'}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="mt-4 text-sm text-gray-600">
-                <p>Fecha de apertura: {new Date(estadoCaja.caja.fechaApertura).toLocaleString()}</p>
+                <p>Fecha de apertura: {estadoCaja.caja ? new Date(estadoCaja.caja.fechaApertura).toLocaleString() : 'N/A'}</p>
               </div>
             </div>
           </div>

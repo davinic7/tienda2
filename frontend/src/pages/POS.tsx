@@ -7,7 +7,7 @@ import Layout from '@/components/Layout';
 import ModalCaja from '@/components/ModalCaja';
 import ModalConfirmarVenta from '@/components/ModalConfirmarVenta';
 import type { Producto, Cliente, Combo, Local } from '@shared/types';
-import { Search, ShoppingCart, User, Plus, Minus, X, Trash2, Scan, DollarSign, Grid3x3, List, Package, Gift, Store, AlertCircle, Scale } from 'lucide-react';
+import { Search, ShoppingCart, User, Plus, Minus, X, Trash2, Scan, DollarSign, Package, Gift, AlertCircle, Scale } from 'lucide-react';
 import { setupBarcodeScanner } from '@/utils/scanner.util';
 import { parseWeightFromText, detectScale } from '@/utils/scale.util';
 
@@ -47,7 +47,7 @@ export default function POS() {
   const [cajaAbierta, setCajaAbierta] = useState<boolean>(false);
   const [mostrarModalCaja, setMostrarModalCaja] = useState(false);
   const [mostrarModalConfirmar, setMostrarModalConfirmar] = useState(false);
-  const [vistaProductos, setVistaProductos] = useState<'grid' | 'lista'>('grid');
+  const [vistaProductos] = useState<'grid' | 'lista'>('grid');
   const [localOrigenId, setLocalOrigenId] = useState<string>('');
   const [nombreComprador, setNombreComprador] = useState('');
   const [pesoActual, setPesoActual] = useState<number | null>(null);
@@ -360,11 +360,11 @@ export default function POS() {
     }
 
     // Agregar todos los productos del combo al carrito
-    combo.productos.forEach((item) => {
-      const producto = productos.find((p) => p.id === item.productoId);
+    combo.productos.forEach((item: { productoId: string; cantidad: number }) => {
+      const producto = productos.find((p: Producto) => p.id === item.productoId);
       if (producto) {
         const precioUnitario = Number(producto.precioFinal || producto.precio || 0);
-        const precioCombo = Number(combo.precioPromocional) / combo.productos.reduce((sum, p) => sum + p.cantidad, 0);
+        const precioCombo = Number(combo.precioPromocional) / combo.productos.reduce((sum: number, p: { cantidad: number }) => sum + p.cantidad, 0);
         const precioFinal = precioCombo < precioUnitario ? precioCombo : precioUnitario;
         
         const itemExistente = carrito.find((item) => item.producto.id === producto.id);
@@ -514,18 +514,18 @@ export default function POS() {
         } else {
           // Si no hay dispositivo HID, intentar leer desde entrada de texto
           // (algunas balanzas envían peso como texto)
-          toast.info('Ingresa el peso manualmente o conecta la balanza USB', { duration: 3000 });
+          toast('Ingresa el peso manualmente o conecta la balanza USB', { duration: 3000, icon: 'ℹ️' });
         }
       } else {
         // Navegador no soporta HID, usar entrada manual
-        toast.info('Tu navegador no soporta lectura directa de balanzas. Ingresa el peso manualmente.', { duration: 4000 });
+        toast('Tu navegador no soporta lectura directa de balanzas. Ingresa el peso manualmente.', { duration: 4000, icon: 'ℹ️' });
       }
     } catch (error: any) {
       // Si el usuario cancela o hay error, usar entrada manual
       if (error.name !== 'NotFoundError') {
         console.error('Error al conectar balanza:', error);
       }
-      toast.info('Ingresa el peso manualmente', { duration: 3000 });
+      toast('Ingresa el peso manualmente', { duration: 3000, icon: 'ℹ️' });
     }
   };
 
@@ -712,9 +712,9 @@ export default function POS() {
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
                     {combos.map((combo) => {
-                      const precioTotalProductos = combo.productos?.reduce((sum, p) => {
+                      const precioTotalProductos = combo.productos?.reduce((sum: number, p: { producto?: { precioFinal?: number | null; precio?: number | null }; cantidad: number }) => {
                         const precio = p.producto?.precioFinal || p.producto?.precio || 0;
-                        return sum + precio * p.cantidad;
+                        return sum + Number(precio) * p.cantidad;
                       }, 0) || 0;
                       const ahorro = precioTotalProductos - Number(combo.precioPromocional);
 

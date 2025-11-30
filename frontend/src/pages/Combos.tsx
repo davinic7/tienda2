@@ -80,7 +80,7 @@ export default function Combos() {
       imagenUrl: combo.imagenUrl || '',
     });
     setProductosCombo(
-      combo.productos?.map((p) => ({
+      combo.productos?.map((p: { productoId: string; cantidad: number }) => ({
         productoId: p.productoId,
         cantidad: p.cantidad,
       })) || []
@@ -220,7 +220,7 @@ export default function Combos() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {combos.map((combo) => {
-              const precioTotalProductos = combo.productos?.reduce((sum, p) => {
+              const precioTotalProductos = combo.productos?.reduce((sum: number, p: { producto?: { precioFinal?: number | null; precio?: number | null }; cantidad: number }) => {
                 const precio = p.producto?.precioFinal || p.producto?.precio || 0;
                 return sum + precio * p.cantidad;
               }, 0) || 0;
@@ -249,7 +249,7 @@ export default function Combos() {
                   <div className="mb-3">
                     <p className="text-xs text-gray-500 mb-1">Incluye:</p>
                     <ul className="text-xs text-gray-600 space-y-1">
-                      {combo.productos?.map((p, idx) => (
+                      {combo.productos?.map((p: { producto?: { nombre?: string }; cantidad: number }, idx: number) => (
                         <li key={idx}>
                           • {p.producto?.nombre} x{p.cantidad}
                         </li>
