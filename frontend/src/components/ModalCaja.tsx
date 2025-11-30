@@ -53,6 +53,7 @@ export default function ModalCaja({ isOpen, onClose, onCajaAbierta, modo = 'auto
       setLoading(true);
       const response = await api.get<EstadoCaja>('/caja/estado');
       setEstadoCaja(response.data);
+      void response; // Usado para setEstadoCaja
     } catch (error: any) {
       toast.error('Error al cargar estado de caja');
     } finally {
@@ -97,7 +98,7 @@ export default function ModalCaja({ isOpen, onClose, onCajaAbierta, modo = 'auto
 
     try {
       setProcesando(true);
-      const response = await api.post(`/caja/cierre/${estadoCaja.caja.id}`, {
+      await api.post(`/caja/cierre/${estadoCaja.caja.id}`, {
         montoFinal: parseFloat(montoFinal),
         observaciones: observaciones || undefined,
       });

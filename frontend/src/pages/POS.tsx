@@ -344,8 +344,8 @@ export default function POS() {
 
     // Verificar stock de todos los productos del combo
     const productosSinStock: string[] = [];
-    combo.productos.forEach((item) => {
-      const producto = productos.find((p) => p.id === item.productoId);
+    combo.productos.forEach((item: { productoId: string; cantidad: number }) => {
+      const producto = productos.find((p: Producto) => p.id === item.productoId);
       if (producto) {
         const stock = producto.stockDisponible || 0;
         if (stock < item.cantidad) {
