@@ -75,7 +75,7 @@ router.get('/estado', authenticate, filterByLocal, async (req: Request, res: Res
       total: 0,
     };
 
-    cajaAbierta.ventas.forEach((venta: { total: number | string | null; metodoPago: string }) => {
+    cajaAbierta.ventas.forEach((venta: any) => {
       const monto = Number(venta.total);
       totales.total += monto;
 
@@ -228,7 +228,7 @@ router.post('/cierre/:id', authenticate, filterByLocal, async (req: Request, res
       total: 0,
     };
 
-    caja.ventas.forEach((venta: { total: number | string | null; metodoPago: string }) => {
+    caja.ventas.forEach((venta: any) => {
       const monto = Number(venta.total);
       totales.total += monto;
 
