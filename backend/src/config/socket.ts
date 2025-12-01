@@ -4,9 +4,13 @@ import { verifyAccessToken } from '../utils/jwt';
 import { prisma } from './database';
 
 export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
+  // Permitir múltiples orígenes separados por coma
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const allowedOrigins = frontendUrl.split(',').map(url => url.trim());
+  
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      origin: allowedOrigins,
       methods: ['GET', 'POST'],
       credentials: true,
     },

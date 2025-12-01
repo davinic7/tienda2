@@ -15,8 +15,20 @@ const httpServer = createServer(app);
 export const io = initializeSocket(httpServer);
 
 // Middlewares
+// Configurar CORS para permitir múltiples orígenes si están separados por coma
+const allowedOrigins = env.FRONTEND_URL.split(',').map(url => url.trim());
 app.use(cors({
-  origin: env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Permitir requests sin origin (como Postman o mobile apps)
+    if (!origin) return callback(null, true);
+    
+    // Verificar si el origin está en la lista permitida
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 

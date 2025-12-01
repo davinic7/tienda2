@@ -88,7 +88,7 @@ npm run start --workspace=backend
 | `DATABASE_URL` | URL de conexión a PostgreSQL | `postgresql://user:pass@host:5432/dbname` | ✅ Sí |
 | `JWT_SECRET` | Secreto para JWT (mínimo 32 caracteres) | `tu-secreto-super-seguro-de-al-menos-32-caracteres` | ✅ Sí |
 | `JWT_REFRESH_SECRET` | Secreto para refresh tokens (mínimo 32 caracteres) | `otro-secreto-super-seguro-de-al-menos-32-caracteres` | ✅ Sí |
-| `FRONTEND_URL` | URL de tu frontend | `https://tu-frontend.onrender.com` o `http://localhost:5173` | ✅ Sí |
+| `FRONTEND_URL` | URL de tu frontend (puede ser múltiples separadas por coma) | `https://lolopos.onrender.com` o `https://frontend1.onrender.com,https://frontend2.onrender.com` | ✅ Sí |
 | `NODE_ENV` | Ambiente de ejecución | `production` | ⚠️ Opcional (default: development) |
 | `PORT` | Puerto del servidor | `5000` o dejar vacío (Render lo asigna) | ⚠️ Opcional (default: 5000) |
 | `JWT_EXPIRES_IN` | Tiempo de expiración del JWT | `3600` | ⚠️ Opcional (default: 3600) |
@@ -157,6 +157,31 @@ NODE_ENV=production
 **⚠️ IMPORTANTE:**
 - Los secretos JWT deben tener **mínimo 32 caracteres**
 - `FRONTEND_URL` debe ser una URL válida (con `http://` o `https://`)
+- `FRONTEND_URL` puede contener múltiples URLs separadas por coma si tienes varios frontends: `https://frontend1.onrender.com,https://frontend2.onrender.com`
 - `DATABASE_URL` debe ser la URL completa de conexión a PostgreSQL
 - Después de agregar las variables, Render reiniciará automáticamente el servicio
+
+## 🚨 Error de CORS: "Access-Control-Allow-Origin"
+
+Si ves este error en la consola del navegador:
+```
+Access to XMLHttpRequest at 'https://tiendaslolo.onrender.com/api/auth/login' 
+from origin 'https://lolopos.onrender.com' has been blocked by CORS policy
+```
+
+**SOLUCIÓN**: Actualiza la variable de entorno `FRONTEND_URL` en Render para incluir la URL de tu frontend:
+
+1. Ve a tu servicio backend en Render
+2. Abre la sección **"Environment"**
+3. Busca la variable `FRONTEND_URL`
+4. Actualiza su valor a la URL de tu frontend: `https://lolopos.onrender.com`
+   - O si tienes múltiples frontends, sepáralos por coma: `https://lolopos.onrender.com,https://otro-frontend.onrender.com`
+5. Guarda los cambios
+6. Render reiniciará automáticamente el servicio
+
+**Ejemplo:**
+- Si tu frontend está en `https://lolopos.onrender.com`, configura:
+  ```
+  FRONTEND_URL=https://lolopos.onrender.com
+  ```
 
