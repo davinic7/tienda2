@@ -405,7 +405,8 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
         }
       }
 
-        // Actualizar puntos del cliente
+      // Actualizar puntos del cliente (si aplica)
+      if (data.clienteId) {
         const puntosAgregados = Math.floor(totalVenta / 10); // 1 punto por cada $10
         if (puntosAgregados > 0) {
           await tx.cliente.update({
