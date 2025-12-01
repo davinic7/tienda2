@@ -136,8 +136,8 @@ export default function ModalConfirmarVenta({
 
   const buscarClientes = async () => {
     try {
-      const response = await api.get<Cliente[]>(`/clientes?search=${busquedaCliente}`);
-      setClientesSugeridos(response.data.slice(0, 5));
+      const response = await api.get<{ clientes: Cliente[] }>(`/clientes?search=${busquedaCliente}`);
+      setClientesSugeridos(response.data.clientes.slice(0, 5));
     } catch (error) {
       // Silencioso
     }

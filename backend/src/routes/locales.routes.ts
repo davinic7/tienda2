@@ -14,11 +14,10 @@ const localCreateSchema = z.object({
 
 const localUpdateSchema = localCreateSchema.partial();
 
-// Solo ADMIN puede gestionar locales
+// Autenticación para todas las rutas
 router.use(authenticate);
-router.use(authorize('ADMIN'));
 
-// GET /locales - Listar todos los locales
+// GET /locales - Listar todos los locales (todos los usuarios autenticados pueden ver)
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { activo } = req.query;
@@ -48,7 +47,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// GET /locales/:id - Obtener un local
+// GET /locales/:id - Obtener un local (todos los usuarios autenticados pueden ver)
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const local = await prisma.local.findUnique({
@@ -83,8 +82,8 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// POST /locales - Crear local
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+// POST /locales - Crear local (solo ADMIN)
+router.post('/', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = localCreateSchema.parse(req.body);
 
@@ -110,8 +109,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// PUT /locales/:id - Actualizar local
-router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
+// PUT /locales/:id - Actualizar local (solo ADMIN)
+router.put('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const localId = req.params.id;
     const data = localUpdateSchema.parse(req.body);
@@ -149,8 +148,8 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// DELETE /locales/:id - Eliminar/Desactivar local
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+// DELETE /locales/:id - Eliminar/Desactivar local (solo ADMIN)
+router.delete('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const localId = req.params.id;
 

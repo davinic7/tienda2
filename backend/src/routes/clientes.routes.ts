@@ -9,7 +9,11 @@ const router = Router();
 
 const clienteCreateSchema = z.object({
   nombre: z.string().min(2),
-  email: z.string().email().optional().nullable(),
+  email: z.union([
+    z.string().email(),
+    z.string().length(0),
+    z.null(),
+  ]).optional(),
   telefono: z.string().optional().nullable(),
   credito: z.number().min(0).optional(),
 });
@@ -118,8 +122,8 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
     const cliente = await prisma.cliente.create({
       data: {
         nombre: data.nombre,
-        email: data.email || null,
-        telefono: data.telefono || null,
+        email: (data.email && data.email.trim() !== '') ? data.email : null,
+        telefono: (data.telefono && data.telefono.trim() !== '') ? data.telefono : null,
         credito: data.credito ? Number(data.credito) : 0,
       },
     });
@@ -177,8 +181,12 @@ router.put('/:id', filterByLocal, async (req: Request, res: Response, next: Next
       where: { id: clienteId },
       data: {
         ...(data.nombre && { nombre: data.nombre }),
-        ...(data.email !== undefined && { email: data.email || null }),
-        ...(data.telefono !== undefined && { telefono: data.telefono || null }),
+        ...(data.email !== undefined && { 
+          email: (data.email && data.email.trim() !== '') ? data.email : null 
+        }),
+        ...(data.telefono !== undefined && { 
+          telefono: (data.telefono && data.telefono.trim() !== '') ? data.telefono : null 
+        }),
         ...(data.credito !== undefined && { credito: Number(data.credito) }),
       },
     });

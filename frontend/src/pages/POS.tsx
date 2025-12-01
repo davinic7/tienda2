@@ -215,8 +215,8 @@ export default function POS() {
 
   const buscarClientes = async () => {
     try {
-      const response = await api.get<Cliente[]>(`/clientes?search=${encodeURIComponent(busquedaCliente)}`);
-      setClientesSugeridos(response.data);
+      const response = await api.get<{ clientes: Cliente[] }>(`/clientes?search=${encodeURIComponent(busquedaCliente)}`);
+      setClientesSugeridos(response.data.clientes);
     } catch (error: any) {
       console.error('Error al buscar clientes:', error);
       toast.error('Error al buscar clientes');
