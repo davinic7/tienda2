@@ -31,6 +31,30 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root route
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    message: 'API TiendasLOLO - Sistema POS Multi-Local',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      api: '/api',
+      auth: '/api/auth',
+      productos: '/api/productos',
+      ventas: '/api/ventas',
+      clientes: '/api/clientes',
+      stock: '/api/stock',
+      locales: '/api/locales',
+      usuarios: '/api/usuarios',
+      reportes: '/api/reportes',
+      depositos: '/api/depositos',
+      caja: '/api/caja',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Routes
 app.use('/api', routes);
 
