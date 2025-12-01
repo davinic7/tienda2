@@ -94,6 +94,7 @@ model Local {
   aperturasCaja AperturaCaja[]
   preciosLocales PrecioLocal[]
   notificaciones Notificacion[]
+  historialPrecios HistorialPrecio[]
 
   @@index([nombre])
 }
