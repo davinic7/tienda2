@@ -85,6 +85,7 @@ async function main() {
     {
       nombre: 'Producto 1',
       descripcion: 'Descripción del producto 1',
+      costo: 70.00,
       precio: 100.00,
       categoria: 'Categoría A',
       codigoBarras: '1234567890123',
@@ -92,6 +93,7 @@ async function main() {
     {
       nombre: 'Producto 2',
       descripcion: 'Descripción del producto 2',
+      costo: 140.00,
       precio: 200.00,
       categoria: 'Categoría B',
       codigoBarras: '1234567890124',
@@ -99,6 +101,7 @@ async function main() {
     {
       nombre: 'Producto 3',
       descripcion: 'Descripción del producto 3',
+      costo: 105.00,
       precio: 150.00,
       categoria: 'Categoría A',
       codigoBarras: '1234567890125',
