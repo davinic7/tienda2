@@ -30,10 +30,11 @@ interface ModalCajaProps {
   isOpen: boolean;
   onClose: () => void;
   onCajaAbierta?: () => void;
+  onCajaCerrada?: () => void;
   modo?: 'apertura' | 'cierre' | 'auto'; // auto: detecta automáticamente
 }
 
-export default function ModalCaja({ isOpen, onClose, onCajaAbierta, modo = 'auto' }: ModalCajaProps) {
+export default function ModalCaja({ isOpen, onClose, onCajaAbierta, onCajaCerrada, modo = 'auto' }: ModalCajaProps) {
   const { user } = useAuthStore();
   const [estadoCaja, setEstadoCaja] = useState<EstadoCaja | null>(null);
   const [montoInicial, setMontoInicial] = useState<string>('0');
@@ -106,6 +107,9 @@ export default function ModalCaja({ isOpen, onClose, onCajaAbierta, modo = 'auto
       setMontoFinal('0');
       setObservaciones('');
       await cargarEstadoCaja();
+      if (onCajaCerrada) {
+        onCajaCerrada();
+      }
       onClose();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Error al cerrar caja');
