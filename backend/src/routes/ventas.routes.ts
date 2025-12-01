@@ -192,9 +192,9 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
       const precioPorCantidad = calcularPrecioPorCantidad(
         precioUnitario,
         detalle.cantidad,
-        producto.preciosPorCantidad.map((p: { cantidad: number; precio: number }) => ({
+        producto.preciosPorCantidad.map((p: any) => ({
           cantidad: p.cantidad,
-          precio: p.precio,
+          precio: Number(p.precio),
         }))
       );
 
