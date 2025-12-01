@@ -1,5 +1,23 @@
 # 🚀 Guía de Deploy en Render
 
+## 🚨 ERROR COMÚN: "ZodError: Required" - Variables de Entorno Faltantes
+
+Si ves este error en los logs de Render:
+```
+ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": ["JWT_SECRET"],
+    "message": "Required"
+  },
+  ...
+]
+```
+
+**SOLUCIÓN**: Debes configurar las variables de entorno en Render. Ve directamente a la sección [🔧 Variables de Entorno Necesarias](#-variables-de-entorno-necesarias) más abajo.
+
 ## ⚠️ Comando de Inicio Correcto
 
 Para producción en Render, debes usar:
@@ -31,12 +49,26 @@ npm run build:backend && npm start --workspace=backend
 
 ⚠️ **IMPORTANTE**: Debes configurar estas variables en Render antes de que el servidor pueda iniciar.
 
-### Cómo Configurar Variables de Entorno en Render:
+### Cómo Configurar Variables de Entorno en Render (PASO A PASO):
 
-1. Ve a tu servicio en el dashboard de Render
-2. Haz clic en **"Environment"** en el menú lateral
-3. Haz clic en **"Add Environment Variable"**
-4. Agrega cada una de las siguientes variables:
+1. **Accede a tu servicio en Render**:
+   - Ve a https://dashboard.render.com
+   - Selecciona tu servicio (Web Service)
+
+2. **Abre la sección de Environment Variables**:
+   - En el menú lateral izquierdo, haz clic en **"Environment"**
+   - O busca la pestaña **"Environment"** en la parte superior
+
+3. **Agrega cada variable**:
+   - Haz clic en **"Add Environment Variable"** o **"Add Variable"**
+   - Ingresa el nombre de la variable (ej: `JWT_SECRET`)
+   - Ingresa el valor de la variable
+   - Haz clic en **"Save Changes"**
+   - Repite para cada variable requerida
+
+4. **Después de agregar todas las variables**:
+   - Render automáticamente reiniciará el servicio
+   - O puedes hacer clic en **"Manual Deploy"** → **"Deploy latest commit"** para forzar un nuevo deploy
 
 ### Variables Requeridas:
 
@@ -94,8 +126,26 @@ Si el servidor no inicia:
 ### Error Común: "ZodError: Required"
 
 Si ves este error, significa que faltan variables de entorno. Verifica que hayas configurado:
-- ✅ `DATABASE_URL`
-- ✅ `JWT_SECRET` (mínimo 32 caracteres)
-- ✅ `JWT_REFRESH_SECRET` (mínimo 32 caracteres)
-- ✅ `FRONTEND_URL`
+
+**Variables OBLIGATORIAS (deben estar todas configuradas):**
+- ✅ `DATABASE_URL` - URL de conexión a PostgreSQL
+- ✅ `JWT_SECRET` - Mínimo 32 caracteres (genera uno seguro)
+- ✅ `JWT_REFRESH_SECRET` - Mínimo 32 caracteres (genera uno diferente)
+- ✅ `FRONTEND_URL` - URL completa de tu frontend (ej: `https://tu-app.onrender.com`)
+
+**Ejemplo de valores:**
+
+```
+DATABASE_URL=postgresql://usuario:password@host:5432/nombre_db
+JWT_SECRET=mi-secreto-super-seguro-de-al-menos-32-caracteres-1234567890
+JWT_REFRESH_SECRET=otro-secreto-super-seguro-de-al-menos-32-caracteres-9876543210
+FRONTEND_URL=https://tu-frontend.onrender.com
+NODE_ENV=production
+```
+
+**⚠️ IMPORTANTE:**
+- Los secretos JWT deben tener **mínimo 32 caracteres**
+- `FRONTEND_URL` debe ser una URL válida (con `http://` o `https://`)
+- `DATABASE_URL` debe ser la URL completa de conexión a PostgreSQL
+- Después de agregar las variables, Render reiniciará automáticamente el servicio
 
