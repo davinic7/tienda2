@@ -46,6 +46,9 @@ export default function ModalConfirmarVenta({
   const [montoEfectivo, setMontoEfectivo] = useState<string>('');
   const [montoOtro, setMontoOtro] = useState<string>('');
   const [cliente, setCliente] = useState<Cliente | null>(clienteActual);
+  const [usarCredito, setUsarCredito] = useState(false);
+  const [montoCredito, setMontoCredito] = useState<string>('');
+  const [depositarRestoACredito, setDepositarRestoACredito] = useState(false);
   const [busquedaCliente, setBusquedaCliente] = useState('');
   const [clientesSugeridos, setClientesSugeridos] = useState<Cliente[]>([]);
   const [mostrarCrearCliente, setMostrarCrearCliente] = useState(false);
@@ -74,6 +77,9 @@ export default function ModalConfirmarVenta({
       // No prellenar montos, dejar vacíos para que el usuario ingrese directamente
       setMontoEfectivo('');
       setMontoOtro('');
+      setUsarCredito(false);
+      setMontoCredito('');
+      setDepositarRestoACredito(false);
       setVentaCompletada(false);
       setMostrarTicket(false);
     }
@@ -106,6 +112,18 @@ export default function ModalConfirmarVenta({
     return carrito.reduce((sum, item) => sum + item.subtotal, 0);
   };
 
+  const calcularTotalAPagar = () => {
+    const total = calcularTotal();
+    if (usarCredito && cliente) {
+      const creditoDisponible = cliente.credito || 0;
+      const creditoAUsar = montoCredito 
+        ? Math.min(parseFloat(montoCredito), creditoDisponible, total)
+        : Math.min(creditoDisponible, total);
+      return total - creditoAUsar;
+    }
+    return total;
+  };
+
   const buscarClientes = async () => {
     try {
       const response = await api.get<Cliente[]>(`/clientes?search=${busquedaCliente}`);
@@ -136,16 +154,35 @@ export default function ModalConfirmarVenta({
 
   const confirmarVenta = async () => {
     const total = calcularTotal();
+    const totalAPagar = calcularTotalAPagar();
 
-    // Validar montos según método de pago
+    // Validar uso de crédito
+    if (usarCredito && !cliente) {
+      toast.error('Debes seleccionar un cliente para usar crédito');
+      return;
+    }
+
+    if (usarCredito && cliente) {
+      const creditoDisponible = cliente.credito || 0;
+      const creditoAUsar = montoCredito 
+        ? Math.min(parseFloat(montoCredito), creditoDisponible, total)
+        : Math.min(creditoDisponible, total);
+      
+      if (creditoAUsar > creditoDisponible) {
+        toast.error(`Crédito insuficiente. Disponible: $${creditoDisponible.toFixed(2)}`);
+        return;
+      }
+    }
+
+    // Validar montos según método de pago (ahora validamos contra totalAPagar)
     if (metodoPago === MetodoPago.MIXTO) {
       if (!montoEfectivo || !montoOtro) {
         toast.error('Para pago mixto debes especificar ambos montos');
         return;
       }
       const sumaMontos = parseFloat(montoEfectivo) + parseFloat(montoOtro);
-      if (sumaMontos < total - 0.01) {
-        toast.error('La suma de los montos no puede ser menor al total');
+      if (sumaMontos < totalAPagar - 0.01) {
+        toast.error(`La suma de los montos no puede ser menor al total a pagar ($${totalAPagar.toFixed(2)})`);
         return;
       }
       // Permitir que sea mayor (no hay problema, solo se cobra el total)
@@ -154,8 +191,8 @@ export default function ModalConfirmarVenta({
         toast.error('Debes ingresar el monto recibido en efectivo');
         return;
       }
-      if (parseFloat(montoEfectivo) < total - 0.01) {
-        toast.error('El monto recibido no puede ser menor al total');
+      if (parseFloat(montoEfectivo) < totalAPagar - 0.01) {
+        toast.error(`El monto recibido no puede ser menor al total a pagar ($${totalAPagar.toFixed(2)})`);
         return;
       }
       // Permitir que sea mayor (se calculará el cambio automáticamente)
@@ -165,8 +202,8 @@ export default function ModalConfirmarVenta({
         toast.error('Debes ingresar el monto pagado');
         return;
       }
-      if (parseFloat(montoOtro) < total - 0.01) {
-        toast.error('El monto pagado no puede ser menor al total');
+      if (parseFloat(montoOtro) < totalAPagar - 0.01) {
+        toast.error(`El monto pagado no puede ser menor al total a pagar ($${totalAPagar.toFixed(2)})`);
         return;
       }
       // Permitir que sea mayor o igual
@@ -201,6 +238,9 @@ export default function ModalConfirmarVenta({
         montoOtro: metodoPago !== MetodoPago.EFECTIVO
           ? (montoOtro ? parseFloat(montoOtro) : undefined)
           : undefined,
+        usarCredito: usarCredito,
+        montoCredito: usarCredito && montoCredito ? parseFloat(montoCredito) : undefined,
+        depositarRestoACredito: depositarRestoACredito,
         productos: carrito.map((item) => ({
           productoId: item.producto.id,
           cantidad: item.cantidad,
@@ -441,23 +481,34 @@ export default function ModalConfirmarVenta({
                   )}
                 </div>
                 {cliente && (
-                  <div className="mt-2 flex items-center justify-between px-3 py-2 bg-green-50 rounded-lg border border-green-200">
-                    <div>
-                      <span className="text-sm font-medium text-green-900">{cliente.nombre}</span>
-                      {cliente.telefono && (
-                        <span className="text-xs text-green-700 ml-2">{cliente.telefono}</span>
-                      )}
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center justify-between px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                      <div>
+                        <span className="text-sm font-medium text-green-900">{cliente.nombre}</span>
+                        {cliente.telefono && (
+                          <span className="text-xs text-green-700 ml-2">{cliente.telefono}</span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setCliente(null);
+                          onClienteSeleccionado(null);
+                          setBusquedaCliente('');
+                          setUsarCredito(false);
+                          setMontoCredito('');
+                          setDepositarRestoACredito(false);
+                        }}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        setCliente(null);
-                        onClienteSeleccionado(null);
-                        setBusquedaCliente('');
-                      }}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    <div className="px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-medium text-blue-700">Crédito disponible:</span>
+                        <span className="text-sm font-bold text-blue-900">${(cliente.credito || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -507,6 +558,56 @@ export default function ModalConfirmarVenta({
                 </div>
               )}
 
+              {/* Opciones de Crédito */}
+              {cliente && (cliente.credito || 0) > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center text-sm font-medium text-gray-700">
+                      <CreditCard className="w-4 h-4 mr-2 text-blue-600" />
+                      Usar Crédito del Cliente
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUsarCredito(!usarCredito);
+                        if (!usarCredito) {
+                          setMontoCredito('');
+                        }
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        usarCredito ? 'bg-blue-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          usarCredito ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {usarCredito && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Monto de Crédito a Usar (Opcional - usa todo si está vacío)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max={Math.min(cliente.credito || 0, calcularTotal())}
+                        value={montoCredito}
+                        onChange={(e) => setMontoCredito(e.target.value)}
+                        placeholder={`Máximo: $${Math.min(cliente.credito || 0, calcularTotal()).toFixed(2)}`}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Crédito disponible: ${(cliente.credito || 0).toFixed(2)} | Total venta: ${calcularTotal().toFixed(2)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Método de Pago */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -552,9 +653,33 @@ export default function ModalConfirmarVenta({
               {metodoPago === MetodoPago.EFECTIVO && (
                 <div className="space-y-3">
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
-                      <span className="text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Total Venta:</span>
+                        <span className="text-lg font-bold text-gray-900">${total.toFixed(2)}</span>
+                      </div>
+                      {usarCredito && cliente && (
+                        <>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Crédito usado:</span>
+                            <span className="font-medium text-blue-600">
+                              -${(montoCredito ? Math.min(parseFloat(montoCredito), cliente.credito || 0, total) : Math.min(cliente.credito || 0, total)).toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="border-t border-gray-300 pt-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
+                              <span className="text-xl font-bold text-gray-900">${calcularTotalAPagar().toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {!usarCredito && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
+                          <span className="text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -568,7 +693,7 @@ export default function ModalConfirmarVenta({
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-lg font-semibold"
                       step="0.01"
                       min="0"
-                      placeholder={`Total: ${total.toFixed(2)}`}
+                      placeholder={`Total: ${calcularTotalAPagar().toFixed(2)}`}
                       autoFocus
                     />
                   </div>
@@ -576,8 +701,8 @@ export default function ModalConfirmarVenta({
                     <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200">
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-700">Total:</span>
-                          <span className="text-lg font-bold text-gray-900">${total.toFixed(2)}</span>
+                          <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
+                          <span className="text-lg font-bold text-gray-900">${calcularTotalAPagar().toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-700">Recibido:</span>
@@ -586,15 +711,39 @@ export default function ModalConfirmarVenta({
                         <div className="border-t border-green-300 pt-2 mt-2">
                           <div className="flex justify-between items-center">
                             <span className="text-base font-bold text-gray-900">Cambio:</span>
-                            <span className={`text-2xl font-bold ${parseFloat(montoEfectivo) >= total ? 'text-green-600' : 'text-red-600'}`}>
-                              ${(parseFloat(montoEfectivo) - total).toFixed(2)}
+                            <span className={`text-2xl font-bold ${parseFloat(montoEfectivo) >= calcularTotalAPagar() ? 'text-green-600' : 'text-red-600'}`}>
+                              ${(parseFloat(montoEfectivo) - calcularTotalAPagar()).toFixed(2)}
                             </span>
                           </div>
-                          {parseFloat(montoEfectivo) < total && (
-                            <p className="text-xs text-red-600 mt-1">⚠️ El monto recibido es menor al total</p>
+                          {parseFloat(montoEfectivo) < calcularTotalAPagar() && (
+                            <p className="text-xs text-red-600 mt-1">⚠️ El monto recibido es menor al total a pagar</p>
+                          )}
+                          {parseFloat(montoEfectivo) > calcularTotalAPagar() && depositarRestoACredito && cliente && (
+                            <div className="mt-2 pt-2 border-t border-green-300">
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-gray-600">Resto a crédito:</span>
+                                <span className="font-medium text-blue-600">
+                                  +${(parseFloat(montoEfectivo) - calcularTotalAPagar()).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
                           )}
                         </div>
                       </div>
+                    </div>
+                  )}
+                  {cliente && parseFloat(montoEfectivo) > calcularTotalAPagar() && (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="depositarRestoACredito"
+                        checked={depositarRestoACredito}
+                        onChange={(e) => setDepositarRestoACredito(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <label htmlFor="depositarRestoACredito" className="text-sm text-gray-700">
+                        Depositar el resto (${(parseFloat(montoEfectivo) - calcularTotalAPagar()).toFixed(2)}) al crédito del cliente
+                      </label>
                     </div>
                   )}
                 </div>
@@ -603,9 +752,33 @@ export default function ModalConfirmarVenta({
               {metodoPago === MetodoPago.MIXTO && (
                 <div className="space-y-3">
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
-                      <span className="text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Total Venta:</span>
+                        <span className="text-lg font-bold text-gray-900">${total.toFixed(2)}</span>
+                      </div>
+                      {usarCredito && cliente && (
+                        <>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Crédito usado:</span>
+                            <span className="font-medium text-blue-600">
+                              -${(montoCredito ? Math.min(parseFloat(montoCredito), cliente.credito || 0, total) : Math.min(cliente.credito || 0, total)).toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="border-t border-gray-300 pt-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
+                              <span className="text-xl font-bold text-gray-900">${calcularTotalAPagar().toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {!usarCredito && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
+                          <span className="text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -640,8 +813,8 @@ export default function ModalConfirmarVenta({
                     <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-700">Total:</span>
-                          <span className="text-lg font-bold text-gray-900">${total.toFixed(2)}</span>
+                          <span className="text-sm font-medium text-gray-700">Total a Pagar:</span>
+                          <span className="text-lg font-bold text-gray-900">${calcularTotalAPagar().toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-700">Efectivo:</span>
@@ -656,7 +829,7 @@ export default function ModalConfirmarVenta({
                           <span className="text-lg font-bold text-gray-900">${(parseFloat(montoEfectivo) + parseFloat(montoOtro)).toFixed(2)}</span>
                         </div>
                         <div className="border-t border-blue-300 pt-2 mt-2">
-                          {Math.abs((parseFloat(montoEfectivo) + parseFloat(montoOtro)) - total) < 0.01 ? (
+                          {Math.abs((parseFloat(montoEfectivo) + parseFloat(montoOtro)) - calcularTotalAPagar()) < 0.01 ? (
                             <div className="flex justify-between items-center">
                               <span className="text-base font-bold text-gray-900">Estado:</span>
                               <span className="text-lg font-bold text-green-600">✓ Correcto</span>
@@ -665,8 +838,8 @@ export default function ModalConfirmarVenta({
                             <div className="space-y-1">
                               <div className="flex justify-between items-center">
                                 <span className="text-base font-bold text-gray-900">Diferencia:</span>
-                                <span className={`text-lg font-bold ${(parseFloat(montoEfectivo) + parseFloat(montoOtro)) > total ? 'text-green-600' : 'text-red-600'}`}>
-                                  ${Math.abs((parseFloat(montoEfectivo) + parseFloat(montoOtro)) - total).toFixed(2)}
+                                <span className={`text-lg font-bold ${(parseFloat(montoEfectivo) + parseFloat(montoOtro)) > calcularTotalAPagar() ? 'text-green-600' : 'text-red-600'}`}>
+                                  ${Math.abs((parseFloat(montoEfectivo) + parseFloat(montoOtro)) - calcularTotalAPagar()).toFixed(2)}
                                 </span>
                               </div>
                               <p className="text-xs text-red-600">⚠️ Los montos no coinciden con el total</p>

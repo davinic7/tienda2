@@ -105,6 +105,7 @@ export interface Cliente {
   email?: string | null;
   telefono?: string | null;
   puntos: number;
+  credito: number;
   fechaRegistro: string;
   createdAt: string;
   updatedAt: string;

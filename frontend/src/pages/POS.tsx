@@ -567,18 +567,25 @@ export default function POS() {
                 {cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}
               </button>
               {cliente && (
-                <div className="flex items-center px-4 py-2 bg-green-50 rounded-lg border border-green-200">
-                  <User className="w-4 h-4 text-green-600 mr-2" />
-                  <span className="text-sm font-medium text-green-900">{cliente.nombre}</span>
-                  <button
-                    onClick={() => {
-                      setCliente(null);
-                      setBusquedaCliente('');
-                    }}
-                    className="ml-2 text-green-600 hover:text-green-800"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center px-4 py-2 bg-green-50 rounded-lg border border-green-200">
+                    <User className="w-4 h-4 text-green-600 mr-2" />
+                    <span className="text-sm font-medium text-green-900">{cliente.nombre}</span>
+                    {(cliente.credito || 0) > 0 && (
+                      <span className="ml-3 text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                        ${(cliente.credito || 0).toFixed(2)} crédito
+                      </span>
+                    )}
+                    <button
+                      onClick={() => {
+                        setCliente(null);
+                        setBusquedaCliente('');
+                      }}
+                      className="ml-2 text-green-600 hover:text-green-800"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

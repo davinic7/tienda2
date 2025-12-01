@@ -3,7 +3,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { Cliente } from '@shared/types';
-import { Plus, Search, Edit, User, Mail, Phone, Gift } from 'lucide-react';
+import { Plus, Search, Edit, User, Mail, Phone, Gift, CreditCard, DollarSign } from 'lucide-react';
 
 export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -15,6 +15,13 @@ export default function Clientes() {
     nombre: '',
     email: '',
     telefono: '',
+    credito: '',
+  });
+  const [mostrarModalCredito, setMostrarModalCredito] = useState(false);
+  const [clienteCredito, setClienteCredito] = useState<Cliente | null>(null);
+  const [formCredito, setFormCredito] = useState({
+    monto: '',
+    operacion: 'agregar' as 'agregar' | 'quitar' | 'establecer',
   });
 
   useEffect(() => {
@@ -45,7 +52,7 @@ export default function Clientes() {
 
   const abrirModalCrear = () => {
     setClienteEditar(null);
-    setFormData({ nombre: '', email: '', telefono: '' });
+    setFormData({ nombre: '', email: '', telefono: '', credito: '' });
     setMostrarModal(true);
   };
 
@@ -55,8 +62,15 @@ export default function Clientes() {
       nombre: cliente.nombre,
       email: cliente.email || '',
       telefono: cliente.telefono || '',
+      credito: cliente.credito?.toString() || '0',
     });
     setMostrarModal(true);
+  };
+
+  const abrirModalCredito = (cliente: Cliente) => {
+    setClienteCredito(cliente);
+    setFormCredito({ monto: '', operacion: 'agregar' });
+    setMostrarModalCredito(true);
   };
 
   const guardarCliente = async () => {
@@ -70,6 +84,7 @@ export default function Clientes() {
         nombre: formData.nombre,
         email: formData.email || null,
         telefono: formData.telefono || null,
+        ...(formData.credito && { credito: parseFloat(formData.credito) || 0 }),
       };
 
       if (clienteEditar) {
@@ -84,6 +99,28 @@ export default function Clientes() {
       cargarClientes();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Error al guardar cliente');
+    }
+  };
+
+  const actualizarCredito = async () => {
+    if (!clienteCredito) return;
+
+    if (!formCredito.monto || parseFloat(formCredito.monto) < 0) {
+      toast.error('Debes ingresar un monto válido');
+      return;
+    }
+
+    try {
+      const response = await api.patch(`/clientes/${clienteCredito.id}/credito`, {
+        monto: parseFloat(formCredito.monto),
+        operacion: formCredito.operacion,
+      });
+
+      toast.success('Crédito actualizado exitosamente');
+      setMostrarModalCredito(false);
+      cargarClientes();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Error al actualizar crédito');
     }
   };
 
@@ -150,12 +187,21 @@ export default function Clientes() {
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => abrirModalEditar(cliente)}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => abrirModalCredito(cliente)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Gestionar crédito"
+                    >
+                      <CreditCard className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => abrirModalEditar(cliente)}
                       className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {cliente.email && (
@@ -170,9 +216,15 @@ export default function Clientes() {
                       {cliente.telefono}
                     </div>
                   )}
-                  <div className="flex items-center text-sm text-green-600 mt-3 pt-3 border-t border-gray-200">
-                    <Gift className="w-4 h-4 mr-2" />
-                    <span className="font-medium">{cliente.puntos} puntos acumulados</span>
+                  <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+                    <div className="flex items-center text-sm text-green-600">
+                      <Gift className="w-4 h-4 mr-2" />
+                      <span className="font-medium">{cliente.puntos} puntos acumulados</span>
+                    </div>
+                    <div className="flex items-center text-sm text-blue-600">
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      <span className="font-medium">${(cliente.credito || 0).toFixed(2)} crédito disponible</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -230,6 +282,20 @@ export default function Clientes() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                       />
                     </div>
+                    {!clienteEditar && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Crédito Inicial (Opcional)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={formData.credito}
+                          onChange={(e) => setFormData({ ...formData, credito: e.target.value })}
+                          placeholder="0.00"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -241,6 +307,94 @@ export default function Clientes() {
                   </button>
                   <button
                     onClick={() => setMostrarModal(false)}
+                    className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Crédito */}
+        {mostrarModalCredito && clienteCredito && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+              <div
+                className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                onClick={() => setMostrarModalCredito(false)}
+              />
+              <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-900">
+                      Gestionar Crédito - {clienteCredito.nombre}
+                    </h3>
+                    <button
+                      onClick={() => setMostrarModalCredito(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-700">Crédito Actual:</span>
+                      <span className="text-lg font-bold text-blue-600">${(clienteCredito.credito || 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Operación</label>
+                      <select
+                        value={formCredito.operacion}
+                        onChange={(e) => setFormCredito({ ...formCredito, operacion: e.target.value as any })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="agregar">Agregar Crédito</option>
+                        <option value="quitar">Quitar Crédito</option>
+                        <option value="establecer">Establecer Crédito</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formCredito.monto}
+                        onChange={(e) => setFormCredito({ ...formCredito, monto: e.target.value })}
+                        placeholder="0.00"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    {formCredito.monto && parseFloat(formCredito.monto) > 0 && (
+                      <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="text-sm text-gray-600">
+                          {formCredito.operacion === 'agregar' && (
+                            <p>Nuevo crédito: <span className="font-bold text-green-600">${((clienteCredito.credito || 0) + parseFloat(formCredito.monto)).toFixed(2)}</span></p>
+                          )}
+                          {formCredito.operacion === 'quitar' && (
+                            <p>Nuevo crédito: <span className="font-bold text-blue-600">${Math.max(0, (clienteCredito.credito || 0) - parseFloat(formCredito.monto)).toFixed(2)}</span></p>
+                          )}
+                          {formCredito.operacion === 'establecer' && (
+                            <p>Nuevo crédito: <span className="font-bold text-blue-600">${parseFloat(formCredito.monto).toFixed(2)}</span></p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    onClick={actualizarCredito}
+                    className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto"
+                  >
+                    Actualizar Crédito
+                  </button>
+                  <button
+                    onClick={() => setMostrarModalCredito(false)}
                     className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                   >
                     Cancelar
