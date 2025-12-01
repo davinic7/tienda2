@@ -32,17 +32,19 @@ npm start
 
 ### 1. Build Command
 ```
-cd backend && npm install && npm run build
+npm install && npm run build
 ```
+
+**IMPORTANTE**: Debe ejecutarse desde la raíz del proyecto para que npm workspaces instale correctamente todas las dependencias.
 
 ### 2. Start Command
 ```
-cd backend && npm start
+npm start
 ```
 
-O si estás en la raíz del proyecto:
+O alternativamente:
 ```
-npm run build:backend && npm start --workspace=backend
+npm run start --workspace=backend
 ```
 
 ## 🔧 Variables de Entorno Necesarias
