@@ -111,7 +111,7 @@ export default function Clientes() {
     }
 
     try {
-      const response = await api.patch(`/clientes/${clienteCredito.id}/credito`, {
+      await api.patch(`/clientes/${clienteCredito.id}/credito`, {
         monto: parseFloat(formCredito.monto),
         operacion: formCredito.operacion,
       });
