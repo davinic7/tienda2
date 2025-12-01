@@ -44,7 +44,21 @@ frontend/dist
 - Incluye `/api` al final
 - Usa `https://` (no `http://`)
 
-### Paso 5: Desplegar
+### Paso 5: Configurar Redirects/Rewrites (IMPORTANTE para rutas SPA)
+
+**⚠️ CRÍTICO**: Para que las rutas funcionen correctamente al actualizar la página, debes configurar reglas de reescritura:
+
+1. Después de crear el Static Site, ve a la sección **"Redirects/Rewrites"** en el menú lateral
+2. Haz clic en **"Add Redirect/Rewrite"**
+3. Configura:
+   - **Source (Origen)**: `/*`
+   - **Destination (Destino)**: `/index.html`
+   - **Action (Acción)**: `Rewrite`
+4. Guarda los cambios
+
+Esto permite que React Router maneje todas las rutas correctamente, incluso cuando actualizas la página en una ruta específica como `/pos`.
+
+### Paso 6: Desplegar
 
 1. Haz clic en **"Create Static Site"**
 2. Render comenzará a construir y desplegar el frontend
@@ -78,7 +92,7 @@ Después del deploy:
 - El frontend necesita la variable `VITE_API_URL` para saber dónde está el backend
 - Si cambias la URL del backend, actualiza `VITE_API_URL` en el frontend
 - El frontend se reconstruye automáticamente cuando haces push al repositorio
-- **Archivo `_redirects`**: El archivo `frontend/public/_redirects` está configurado para que todas las rutas redirijan a `index.html`, permitiendo que React Router maneje correctamente las rutas cuando actualizas la página
+- **Redirects/Rewrites**: Es **OBLIGATORIO** configurar la regla de reescritura `/* -> /index.html` en Render para que las rutas SPA funcionen correctamente al actualizar la página
 
 ## 🎯 Próximos Pasos
 
