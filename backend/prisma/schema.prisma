@@ -287,6 +287,7 @@ model Cliente {
   email        String?  @unique
   telefono     String? 
   puntos       Int      @default(0)
+  credito      Decimal  @default(0) @db.Decimal(10, 2)
   fechaRegistro DateTime @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

@@ -17,6 +17,9 @@ const crearVentaSchema = z.object({
   metodoPago: z.enum(['EFECTIVO', 'CREDITO', 'MIXTO', 'DEBITO', 'QR', 'TARJETA_CREDITO', 'TRANSFERENCIA']).default('EFECTIVO'),
   montoEfectivo: z.number().min(0).optional(),
   montoOtro: z.number().min(0).optional(),
+  usarCredito: z.boolean().optional().default(false), // Si el cliente quiere usar su crédito
+  montoCredito: z.number().min(0).optional(), // Monto del crédito a usar
+  depositarRestoACredito: z.boolean().optional().default(false), // Si quiere depositar el resto/vuelto a su crédito
   productos: z.array(
     z.object({
       productoId: z.string().uuid(),
@@ -63,9 +66,10 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
 
     const data = crearVentaSchema.parse(req.body);
 
-    // Verificar que el cliente existe (si se proporciona)
+    // Verificar que el cliente existe (si se proporciona) y obtener su crédito
+    let cliente: any = null;
     if (data.clienteId) {
-      const cliente = await prisma.cliente.findUnique({
+      cliente = await prisma.cliente.findUnique({
         where: { id: data.clienteId },
       });
 
@@ -73,6 +77,17 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
         res.status(404).json({ error: 'Cliente no encontrado' });
         return;
       }
+    }
+
+    // Validar uso de crédito
+    if (data.usarCredito && !data.clienteId) {
+      res.status(400).json({ error: 'Debes seleccionar un cliente para usar crédito' });
+      return;
+    }
+
+    if (data.depositarRestoACredito && !data.clienteId) {
+      res.status(400).json({ error: 'Debes seleccionar un cliente para depositar el resto a crédito' });
+      return;
     }
 
     // Determinar si es venta remota
@@ -212,15 +227,42 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
       totalVenta += subtotal;
     }
 
-    // Validar montos según método de pago
+    // Procesar crédito del cliente (si se usa)
+    let montoCreditoUsado = 0;
+    let totalAPagar = totalVenta;
+
+    if (data.usarCredito && cliente) {
+      const creditoDisponible = Number(cliente.credito);
+      montoCreditoUsado = data.montoCredito 
+        ? Math.min(Number(data.montoCredito), creditoDisponible, totalVenta)
+        : Math.min(creditoDisponible, totalVenta);
+
+      if (montoCreditoUsado > creditoDisponible) {
+        res.status(400).json({ 
+          error: `Crédito insuficiente. Disponible: $${creditoDisponible.toFixed(2)}, Solicitado: $${montoCreditoUsado.toFixed(2)}` 
+        });
+        return;
+      }
+
+      if (montoCreditoUsado > totalVenta) {
+        res.status(400).json({ 
+          error: `El crédito a usar ($${montoCreditoUsado.toFixed(2)}) no puede ser mayor al total de la venta ($${totalVenta.toFixed(2)})` 
+        });
+        return;
+      }
+
+      totalAPagar = totalVenta - montoCreditoUsado;
+    }
+
+    // Validar montos según método de pago (ahora validamos contra totalAPagar, no totalVenta)
     if (data.metodoPago === 'MIXTO') {
       if (!data.montoEfectivo || !data.montoOtro) {
         res.status(400).json({ error: 'Para pago mixto debes especificar montoEfectivo y montoOtro' });
         return;
       }
       const sumaMontos = Number(data.montoEfectivo) + Number(data.montoOtro);
-      if (sumaMontos < totalVenta - 0.01) {
-        res.status(400).json({ error: 'La suma de los montos no puede ser menor al total de la venta' });
+      if (sumaMontos < totalAPagar - 0.01) {
+        res.status(400).json({ error: `La suma de los montos no puede ser menor al total a pagar ($${totalAPagar.toFixed(2)})` });
         return;
       }
       // Permitir que sea mayor (no hay problema, solo se cobra el total)
@@ -229,8 +271,8 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
         res.status(400).json({ error: 'Debes especificar el monto recibido en efectivo' });
         return;
       }
-      if (Number(data.montoEfectivo) < totalVenta - 0.01) {
-        res.status(400).json({ error: 'El monto recibido no puede ser menor al total de la venta' });
+      if (Number(data.montoEfectivo) < totalAPagar - 0.01) {
+        res.status(400).json({ error: `El monto recibido no puede ser menor al total a pagar ($${totalAPagar.toFixed(2)})` });
         return;
       }
       // Permitir que sea mayor (se calculará el cambio automáticamente)
@@ -243,11 +285,27 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
         res.status(400).json({ error: `Para el método de pago ${data.metodoPago}, el monto debe ser especificado.` });
         return;
       }
-      if (Number(data.montoOtro) < totalVenta - 0.01) {
-        res.status(400).json({ error: `El monto para ${data.metodoPago} no puede ser menor al total de la venta.` });
+      if (Number(data.montoOtro) < totalAPagar - 0.01) {
+        res.status(400).json({ error: `El monto para ${data.metodoPago} no puede ser menor al total a pagar ($${totalAPagar.toFixed(2)})` });
         return;
       }
       // Permitir que sea mayor o igual
+    }
+
+    // Calcular el resto/vuelto para depositar a crédito (si aplica)
+    let restoACredito = 0;
+    if (data.depositarRestoACredito && cliente) {
+      let montoPagado = 0;
+      
+      if (data.metodoPago === 'EFECTIVO') {
+        montoPagado = Number(data.montoEfectivo || 0);
+      } else if (data.metodoPago === 'MIXTO') {
+        montoPagado = Number(data.montoEfectivo || 0) + Number(data.montoOtro || 0);
+      } else {
+        montoPagado = Number(data.montoOtro || 0);
+      }
+
+      restoACredito = Math.max(0, montoPagado - totalAPagar);
     }
 
     // Crear venta con transacción
@@ -325,8 +383,29 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
         }
       }
 
-      // Actualizar puntos del cliente (si aplica)
-      if (data.clienteId) {
+      // Actualizar crédito del cliente (si se usa o se deposita resto)
+      if (data.clienteId && (montoCreditoUsado > 0 || restoACredito > 0)) {
+        // Obtener crédito actual del cliente
+        const clienteActual = await tx.cliente.findUnique({
+          where: { id: data.clienteId },
+          select: { credito: true },
+        });
+
+        if (clienteActual) {
+          const creditoActual = Number(clienteActual.credito);
+          // Calcular nuevo crédito: descontar usado y agregar resto
+          const nuevoCredito = creditoActual - montoCreditoUsado + restoACredito;
+
+          await tx.cliente.update({
+            where: { id: data.clienteId },
+            data: {
+              credito: Math.max(0, nuevoCredito), // Asegurar que no sea negativo
+            },
+          });
+        }
+      }
+
+        // Actualizar puntos del cliente
         const puntosAgregados = Math.floor(totalVenta / 10); // 1 punto por cada $10
         if (puntosAgregados > 0) {
           await tx.cliente.update({

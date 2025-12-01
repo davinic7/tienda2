@@ -11,6 +11,7 @@ const clienteCreateSchema = z.object({
   nombre: z.string().min(2),
   email: z.string().email().optional().nullable(),
   telefono: z.string().optional().nullable(),
+  credito: z.number().min(0).optional(),
 });
 
 const clienteUpdateSchema = clienteCreateSchema.partial();
@@ -119,6 +120,7 @@ router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFu
         nombre: data.nombre,
         email: data.email || null,
         telefono: data.telefono || null,
+        credito: data.credito ? Number(data.credito) : 0,
       },
     });
 
@@ -177,6 +179,7 @@ router.put('/:id', filterByLocal, async (req: Request, res: Response, next: Next
         ...(data.nombre && { nombre: data.nombre }),
         ...(data.email !== undefined && { email: data.email || null }),
         ...(data.telefono !== undefined && { telefono: data.telefono || null }),
+        ...(data.credito !== undefined && { credito: Number(data.credito) }),
       },
     });
 
@@ -224,10 +227,87 @@ router.get('/buscar/:termino', filterByLocal, async (req: Request, res: Response
         email: true,
         telefono: true,
         puntos: true,
+        credito: true,
       },
     });
 
     res.json(clientes);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PATCH /clientes/:id/credito - Actualizar crédito del cliente
+router.patch('/:id/credito', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const clienteId = req.params.id;
+    const { monto, operacion } = z.object({
+      monto: z.number().min(0),
+      operacion: z.enum(['agregar', 'quitar', 'establecer']),
+    }).parse(req.body);
+
+    const cliente = await prisma.cliente.findUnique({
+      where: { id: clienteId },
+    });
+
+    if (!cliente) {
+      res.status(404).json({ error: 'Cliente no encontrado' });
+      return;
+    }
+
+    const creditoAnterior = Number(cliente.credito);
+    let nuevoCredito: number;
+
+    switch (operacion) {
+      case 'agregar':
+        nuevoCredito = creditoAnterior + monto;
+        break;
+      case 'quitar':
+        nuevoCredito = Math.max(0, creditoAnterior - monto);
+        break;
+      case 'establecer':
+        nuevoCredito = monto;
+        break;
+      default:
+        res.status(400).json({ error: 'Operación inválida. Debe ser: agregar, quitar o establecer' });
+        return;
+    }
+
+    const clienteActualizado = await prisma.cliente.update({
+      where: { id: clienteId },
+      data: {
+        credito: nuevoCredito,
+      },
+    });
+
+    // Log de auditoría
+    await createAuditLog({
+      userId: req.user!.id,
+      accion: 'UPDATE',
+      tabla: 'Cliente',
+      datosAnteriores: { credito: creditoAnterior },
+      datosNuevos: { credito: nuevoCredito, operacion, monto },
+    });
+
+    // Emitir evento de cliente actualizado
+    if (io) {
+      io.emit('cliente-credito-actualizado', {
+        clienteId: clienteActualizado.id,
+        creditoAnterior,
+        creditoNuevo: nuevoCredito,
+        operacion,
+        monto,
+        fecha: new Date(),
+      });
+    }
+
+    res.json({
+      cliente: clienteActualizado,
+      creditoAnterior,
+      creditoNuevo: nuevoCredito,
+      operacion,
+      monto,
+    });
   } catch (error) {
     next(error);
   }
