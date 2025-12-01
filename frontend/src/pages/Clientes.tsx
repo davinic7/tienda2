@@ -5,6 +5,16 @@ import Layout from '@/components/Layout';
 import type { Cliente } from '@shared/types';
 import { Plus, Search, Edit, User, Mail, Phone, Gift, CreditCard, DollarSign } from 'lucide-react';
 
+// Helper para convertir crédito a número de forma segura
+const getCreditoAsNumber = (credito: any): number => {
+  if (typeof credito === 'number') return credito;
+  if (typeof credito === 'string') return parseFloat(credito) || 0;
+  if (credito && typeof credito === 'object' && 'toNumber' in credito) {
+    return credito.toNumber();
+  }
+  return 0;
+};
+
 export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
@@ -223,7 +233,7 @@ export default function Clientes() {
                     </div>
                     <div className="flex items-center text-sm text-blue-600">
                       <DollarSign className="w-4 h-4 mr-2" />
-                      <span className="font-medium">${(cliente.credito || 0).toFixed(2)} crédito disponible</span>
+                      <span className="font-medium">${getCreditoAsNumber(cliente.credito).toFixed(2)} crédito disponible</span>
                     </div>
                   </div>
                 </div>
@@ -341,7 +351,7 @@ export default function Clientes() {
                   <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-700">Crédito Actual:</span>
-                      <span className="text-lg font-bold text-blue-600">${(clienteCredito.credito || 0).toFixed(2)}</span>
+                      <span className="text-lg font-bold text-blue-600">${getCreditoAsNumber(clienteCredito.credito).toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -373,10 +383,10 @@ export default function Clientes() {
                       <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <div className="text-sm text-gray-600">
                           {formCredito.operacion === 'agregar' && (
-                            <p>Nuevo crédito: <span className="font-bold text-green-600">${((clienteCredito.credito || 0) + parseFloat(formCredito.monto)).toFixed(2)}</span></p>
+                            <p>Nuevo crédito: <span className="font-bold text-green-600">${(getCreditoAsNumber(clienteCredito.credito) + parseFloat(formCredito.monto)).toFixed(2)}</span></p>
                           )}
                           {formCredito.operacion === 'quitar' && (
-                            <p>Nuevo crédito: <span className="font-bold text-blue-600">${Math.max(0, (clienteCredito.credito || 0) - parseFloat(formCredito.monto)).toFixed(2)}</span></p>
+                            <p>Nuevo crédito: <span className="font-bold text-blue-600">${Math.max(0, getCreditoAsNumber(clienteCredito.credito) - parseFloat(formCredito.monto)).toFixed(2)}</span></p>
                           )}
                           {formCredito.operacion === 'establecer' && (
                             <p>Nuevo crédito: <span className="font-bold text-blue-600">${parseFloat(formCredito.monto).toFixed(2)}</span></p>

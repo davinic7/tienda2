@@ -11,6 +11,16 @@ import { Search, ShoppingCart, User, Plus, Minus, X, Trash2, Scan, DollarSign, P
 import { setupBarcodeScanner } from '@/utils/scanner.util';
 import { detectScale } from '@/utils/scale.util';
 
+// Helper para convertir crédito a número de forma segura
+const getCreditoAsNumber = (credito: any): number => {
+  if (typeof credito === 'number') return credito;
+  if (typeof credito === 'string') return parseFloat(credito) || 0;
+  if (credito && typeof credito === 'object' && 'toNumber' in credito) {
+    return credito.toNumber();
+  }
+  return 0;
+};
+
 interface CarritoItem {
   producto: Producto;
   cantidad: number;
@@ -571,9 +581,9 @@ export default function POS() {
                   <div className="flex items-center px-4 py-2 bg-green-50 rounded-lg border border-green-200">
                     <User className="w-4 h-4 text-green-600 mr-2" />
                     <span className="text-sm font-medium text-green-900">{cliente.nombre}</span>
-                    {(cliente.credito || 0) > 0 && (
+                    {getCreditoAsNumber(cliente.credito) > 0 && (
                       <span className="ml-3 text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                        ${(cliente.credito || 0).toFixed(2)} crédito
+                        ${getCreditoAsNumber(cliente.credito).toFixed(2)} crédito
                       </span>
                     )}
                     <button

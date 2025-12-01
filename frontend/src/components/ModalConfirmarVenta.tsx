@@ -7,6 +7,16 @@ import { MetodoPago } from '@shared/types';
 import { X, User, Plus, Printer, Check, CreditCard, DollarSign, Store, AlertCircle } from 'lucide-react';
 import { printTicket } from '@/utils/printer.util';
 
+// Helper para convertir crédito a número de forma segura
+const getCreditoAsNumber = (credito: any): number => {
+  if (typeof credito === 'number') return credito;
+  if (typeof credito === 'string') return parseFloat(credito) || 0;
+  if (credito && typeof credito === 'object' && 'toNumber' in credito) {
+    return credito.toNumber();
+  }
+  return 0;
+};
+
 interface CarritoItem {
   producto: Producto;
   cantidad: number;
@@ -115,7 +125,7 @@ export default function ModalConfirmarVenta({
   const calcularTotalAPagar = () => {
     const total = calcularTotal();
     if (usarCredito && cliente) {
-      const creditoDisponible = cliente.credito || 0;
+      const creditoDisponible = getCreditoAsNumber(cliente.credito);
       const creditoAUsar = montoCredito 
         ? Math.min(parseFloat(montoCredito), creditoDisponible, total)
         : Math.min(creditoDisponible, total);
@@ -163,7 +173,7 @@ export default function ModalConfirmarVenta({
     }
 
     if (usarCredito && cliente) {
-      const creditoDisponible = cliente.credito || 0;
+      const creditoDisponible = getCreditoAsNumber(cliente.credito);
       const creditoAUsar = montoCredito 
         ? Math.min(parseFloat(montoCredito), creditoDisponible, total)
         : Math.min(creditoDisponible, total);
@@ -506,7 +516,7 @@ export default function ModalConfirmarVenta({
                     <div className="px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-medium text-blue-700">Crédito disponible:</span>
-                        <span className="text-sm font-bold text-blue-900">${(cliente.credito || 0).toFixed(2)}</span>
+                        <span className="text-sm font-bold text-blue-900">${getCreditoAsNumber(cliente.credito).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -594,14 +604,14 @@ export default function ModalConfirmarVenta({
                         type="number"
                         step="0.01"
                         min="0"
-                        max={Math.min(cliente.credito || 0, calcularTotal())}
+                        max={Math.min(getCreditoAsNumber(cliente.credito), calcularTotal())}
                         value={montoCredito}
                         onChange={(e) => setMontoCredito(e.target.value)}
-                        placeholder={`Máximo: $${Math.min(cliente.credito || 0, calcularTotal()).toFixed(2)}`}
+                        placeholder={`Máximo: $${Math.min(getCreditoAsNumber(cliente.credito), calcularTotal()).toFixed(2)}`}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        Crédito disponible: ${(cliente.credito || 0).toFixed(2)} | Total venta: ${calcularTotal().toFixed(2)}
+                        Crédito disponible: ${getCreditoAsNumber(cliente.credito).toFixed(2)} | Total venta: ${calcularTotal().toFixed(2)}
                       </p>
                     </div>
                   )}
@@ -663,7 +673,7 @@ export default function ModalConfirmarVenta({
                           <div className="flex justify-between items-center text-sm">
                             <span className="text-gray-600">Crédito usado:</span>
                             <span className="font-medium text-blue-600">
-                              -${(montoCredito ? Math.min(parseFloat(montoCredito), cliente.credito || 0, total) : Math.min(cliente.credito || 0, total)).toFixed(2)}
+                              -${(montoCredito ? Math.min(parseFloat(montoCredito), getCreditoAsNumber(cliente.credito), total) : Math.min(getCreditoAsNumber(cliente.credito), total)).toFixed(2)}
                             </span>
                           </div>
                           <div className="border-t border-gray-300 pt-2">
@@ -762,7 +772,7 @@ export default function ModalConfirmarVenta({
                           <div className="flex justify-between items-center text-sm">
                             <span className="text-gray-600">Crédito usado:</span>
                             <span className="font-medium text-blue-600">
-                              -${(montoCredito ? Math.min(parseFloat(montoCredito), cliente.credito || 0, total) : Math.min(cliente.credito || 0, total)).toFixed(2)}
+                              -${(montoCredito ? Math.min(parseFloat(montoCredito), getCreditoAsNumber(cliente.credito), total) : Math.min(getCreditoAsNumber(cliente.credito), total)).toFixed(2)}
                             </span>
                           </div>
                           <div className="border-t border-gray-300 pt-2">
