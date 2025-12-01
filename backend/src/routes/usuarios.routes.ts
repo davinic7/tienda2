@@ -123,8 +123,15 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Si es VENDEDOR, debe tener localId
+    // ALMACEN no requiere localId (trabaja en el almacén central)
     if (data.role === 'VENDEDOR' && !data.localId) {
       res.status(400).json({ error: 'Los vendedores deben tener un local asignado' });
+      return;
+    }
+    
+    // ALMACEN no debe tener localId asignado
+    if (data.role === 'ALMACEN' && data.localId) {
+      res.status(400).json({ error: 'Los usuarios de almacén no deben tener un local asignado' });
       return;
     }
 
@@ -191,15 +198,31 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    // Si es VENDEDOR y se quita el localId o se asigna otro
-    if (data.role === 'VENDEDOR' || (usuarioAnterior.role === 'VENDEDOR' && data.role !== 'ADMIN')) {
-      if (!data.localId && data.localId !== null) {
-        // Si no se envía localId, mantener el actual
-        // Pero si se envía null explícitamente, validar
-      } else if (data.localId === null && usuarioAnterior.role === 'VENDEDOR') {
+    // Validaciones de localId según el rol
+    const nuevoRol = data.role || usuarioAnterior.role;
+    
+    // Si es VENDEDOR, debe tener localId
+    if (nuevoRol === 'VENDEDOR') {
+      if (data.localId === null) {
         res.status(400).json({ error: 'Los vendedores deben tener un local asignado' });
         return;
       }
+      // Si no se envía localId, mantener el actual (solo si ya es vendedor)
+      if (!data.localId && usuarioAnterior.role !== 'VENDEDOR') {
+        res.status(400).json({ error: 'Los vendedores deben tener un local asignado' });
+        return;
+      }
+    }
+    
+    // Si es ALMACEN, no debe tener localId
+    if (nuevoRol === 'ALMACEN' && data.localId !== undefined && data.localId !== null) {
+      res.status(400).json({ error: 'Los usuarios de almacén no deben tener un local asignado' });
+      return;
+    }
+    
+    // Si se cambia a ALMACEN, quitar localId
+    if (data.role === 'ALMACEN' && usuarioAnterior.localId) {
+      data.localId = null;
     }
 
     // Verificar que el local existe (si se proporciona)
