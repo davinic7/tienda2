@@ -11,6 +11,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Mejoras para dispositivos táctiles */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Asegurar que los botones sean táctiles en móviles */
+@media (max-width: 640px) {
+  button {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Mejorar el área táctil en móviles */
+  button, a {
+    min-height: 44px;
+  }
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

@@ -557,33 +557,34 @@ export default function POS() {
     <Layout>
       <div className="h-[calc(100vh-4rem)] flex flex-col bg-gray-50">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">Punto de Venta</h1>
-              <p className="text-sm text-gray-600 mt-1">{user?.local?.nombre}</p>
+        <div className="bg-white shadow-sm border-b px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Punto de Venta</h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">{user?.local?.nombre}</p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2 sm:space-x-4 flex-wrap">
               <button
                 onClick={() => setMostrarModalCaja(true)}
-                className={`flex items-center px-4 py-2 rounded-lg transition-colors font-medium ${
+                className={`flex items-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-colors font-medium text-sm sm:text-base min-h-[44px] touch-manipulation ${
                   cajaAbierta
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300'
+                    : 'bg-red-100 text-red-700 hover:bg-red-200 active:bg-red-300'
                 }`}
                 title={cajaAbierta ? 'Cerrar Caja' : 'Abrir Caja'}
               >
-                <DollarSign className="w-5 h-5 mr-2" />
-                {cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                <span className="hidden sm:inline">{cajaAbierta ? 'Caja Abierta' : 'Caja Cerrada'}</span>
+                <span className="sm:hidden">{cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
               </button>
               {cliente && (
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center px-4 py-2 bg-green-50 rounded-lg border border-green-200">
-                    <User className="w-4 h-4 text-green-600 mr-2" />
-                    <span className="text-sm font-medium text-green-900">{cliente.nombre}</span>
+                <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
+                  <div className="flex items-center px-2 sm:px-4 py-2 bg-green-50 rounded-lg border border-green-200 min-w-0 flex-1 sm:flex-initial">
+                    <User className="w-4 h-4 text-green-600 mr-1 sm:mr-2 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm font-medium text-green-900 truncate">{cliente.nombre}</span>
                     {getCreditoAsNumber(cliente.credito) > 0 && (
-                      <span className="ml-3 text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                        ${getCreditoAsNumber(cliente.credito).toFixed(2)} crédito
+                      <span className="ml-2 text-xs font-semibold text-blue-600 bg-blue-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex-shrink-0">
+                        ${getCreditoAsNumber(cliente.credito).toFixed(2)}
                       </span>
                     )}
                     <button
@@ -591,7 +592,7 @@ export default function POS() {
                         setCliente(null);
                         setBusquedaCliente('');
                       }}
-                      className="ml-2 text-green-600 hover:text-green-800"
+                      className="ml-1 sm:ml-2 text-green-600 hover:text-green-800 active:text-green-900 p-1 flex-shrink-0 touch-manipulation"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -602,9 +603,9 @@ export default function POS() {
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Panel izquierdo - Búsqueda */}
-          <div className="w-1/2 border-r bg-white overflow-y-auto">
+          <div className="w-full lg:w-1/2 lg:border-r bg-white overflow-y-auto flex flex-col">
             {/* Búsqueda de cliente */}
             <div className="p-4 border-b bg-gray-50">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -647,29 +648,29 @@ export default function POS() {
             </div>
 
             {/* Tabs Productos/Combos */}
-            <div className="p-4 border-b bg-white sticky top-0 z-10">
-              <div className="flex gap-2 mb-4">
+            <div className="p-3 sm:p-4 border-b bg-white sticky top-0 z-10">
+              <div className="flex gap-2 mb-3 sm:mb-4">
                 <button
                   onClick={() => setVistaActual('productos')}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-colors min-h-[44px] touch-manipulation active:scale-95 ${
                     vistaActual === 'productos'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-green-600 text-white active:bg-green-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                   }`}
                 >
-                  <Package className="w-4 h-4 inline mr-2" />
-                  Productos
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+                  <span className="text-sm sm:text-base">Productos</span>
                 </button>
                 <button
                   onClick={() => setVistaActual('combos')}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-colors min-h-[44px] touch-manipulation active:scale-95 ${
                     vistaActual === 'combos'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-purple-600 text-white active:bg-purple-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                   }`}
                 >
-                  <Gift className="w-4 h-4 inline mr-2" />
-                  Combos
+                  <Gift className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+                  <span className="text-sm sm:text-base">Combos</span>
                 </button>
               </div>
               {vistaActual === 'productos' && (
@@ -684,21 +685,21 @@ export default function POS() {
                       value={busqueda}
                       onChange={(e) => setBusqueda(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Buscar producto o escanear código de barras..."
-                      className="block w-full pl-12 pr-20 py-3 text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm transition-all"
+                      placeholder="Buscar producto o escanear código..."
+                      className="block w-full pl-10 sm:pl-12 pr-16 sm:pr-20 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm transition-all"
                       autoFocus
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3">
                       <button
                         onClick={() => setEscannerActivo(!escannerActivo)}
-                        className={`p-2 rounded-lg transition-colors ${
+                        className={`p-2 sm:p-2.5 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation active:scale-95 ${
                           escannerActivo
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-gray-100 text-gray-400'
+                            ? 'bg-green-100 text-green-600 active:bg-green-200'
+                            : 'bg-gray-100 text-gray-400 active:bg-gray-200'
                         }`}
                         title={escannerActivo ? 'Escáner activo' : 'Escáner desactivado'}
                       >
-                        <Scan className="w-5 h-5" />
+                        <Scan className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   </div>
@@ -727,7 +728,7 @@ export default function POS() {
                     <p className="text-lg font-medium">No hay combos disponibles</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {combos.map((combo) => {
                       const precioTotalProductos = combo.productos?.reduce((sum: number, p: { producto?: { precioFinal?: number | null; precio?: number | null }; cantidad: number }) => {
                         const precio = p.producto?.precioFinal || p.producto?.precio || 0;
@@ -739,7 +740,7 @@ export default function POS() {
                         <button
                           key={combo.id}
                           onClick={() => agregarComboAlCarrito(combo)}
-                          className="text-left p-3 border-2 rounded-xl border-purple-200 bg-white hover:border-purple-500 hover:shadow-md transition-all"
+                          className="text-left p-3 sm:p-4 border-2 rounded-xl border-purple-200 bg-white hover:border-purple-500 hover:shadow-md active:scale-95 transition-all min-h-[120px] touch-manipulation"
                         >
                           <div className="w-full h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-2 flex items-center justify-center">
                             <Gift className="w-8 h-8 text-purple-400" />
@@ -777,8 +778,8 @@ export default function POS() {
                 <div
                   className={
                     vistaProductos === 'grid'
-                      ? 'grid grid-cols-2 gap-3'
-                      : 'grid gap-3'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4'
+                      : 'grid gap-3 sm:gap-4'
                   }
                 >
                   {productosMostrados.map((producto: any) => {
@@ -792,10 +793,10 @@ export default function POS() {
                           key={producto.id}
                           onClick={() => !sinStock && agregarAlCarrito(producto)}
                           disabled={sinStock}
-                          className={`group relative text-left p-3 border-2 rounded-xl transition-all duration-200 ${
+                          className={`group relative text-left p-3 sm:p-4 border-2 rounded-xl transition-all duration-200 min-h-[140px] sm:min-h-[160px] touch-manipulation ${
                             sinStock
                               ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                              : 'border-gray-200 bg-white hover:border-green-500 hover:shadow-md'
+                              : 'border-gray-200 bg-white hover:border-green-500 hover:shadow-md active:scale-95'
                           }`}
                         >
                           {producto.imagenUrl ? (
@@ -846,10 +847,10 @@ export default function POS() {
                         key={producto.id}
                         onClick={() => !sinStock && agregarAlCarrito(producto)}
                         disabled={sinStock}
-                        className={`group relative text-left p-4 border-2 rounded-xl transition-all duration-200 ${
+                        className={`group relative text-left p-4 sm:p-5 border-2 rounded-xl transition-all duration-200 min-h-[80px] touch-manipulation ${
                           sinStock
                             ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                            : 'border-gray-200 bg-white hover:border-green-500 hover:shadow-md'
+                            : 'border-gray-200 bg-white hover:border-green-500 hover:shadow-md active:scale-95'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -893,8 +894,8 @@ export default function POS() {
           </div>
 
           {/* Panel derecho - Carrito */}
-          <div className="w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-            <div className="p-6 border-b bg-white">
+          <div className="w-full lg:w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col border-t lg:border-t-0">
+            <div className="p-4 sm:p-6 border-b bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-green-100 rounded-lg">
@@ -908,7 +909,7 @@ export default function POS() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {carrito.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
                   <ShoppingCart className="w-24 h-24 mb-4 opacity-30" />
@@ -941,7 +942,7 @@ export default function POS() {
                           </div>
                         <button
                           onClick={() => eliminarDelCarrito(item.producto.id)}
-                          className="ml-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="ml-2 p-2 sm:p-2.5 text-red-600 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
                           title="Eliminar"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -951,9 +952,9 @@ export default function POS() {
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => actualizarCantidad(item.producto.id, item.cantidad - 1)}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border-2 border-gray-300 hover:border-green-500 hover:bg-green-50 transition-colors"
+                            className="w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg border-2 border-gray-300 hover:border-green-500 hover:bg-green-50 active:bg-green-100 active:scale-95 transition-colors touch-manipulation"
                           >
-                            <Minus className="w-4 h-4 text-gray-600" />
+                            <Minus className="w-5 h-5 sm:w-4 sm:h-4 text-gray-600" />
                           </button>
                           <input
                             type="number"
@@ -964,16 +965,16 @@ export default function POS() {
                                 parseInt(e.target.value) || 0
                               )
                             }
-                            className="w-16 text-center border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 font-semibold"
+                            className="w-20 sm:w-16 text-center border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 font-semibold text-base sm:text-sm min-h-[44px] sm:min-h-0"
                             min="1"
                             max={item.stockDisponible}
                           />
                           <button
                             onClick={() => actualizarCantidad(item.producto.id, item.cantidad + 1)}
                             disabled={item.stockDisponible > 0 && item.cantidad >= item.stockDisponible}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg border-2 border-gray-300 hover:border-green-500 hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg border-2 border-gray-300 hover:border-green-500 hover:bg-green-50 active:bg-green-100 active:scale-95 transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                           >
-                            <Plus className="w-4 h-4 text-gray-600" />
+                            <Plus className="w-5 h-5 sm:w-4 sm:h-4 text-gray-600" />
                           </button>
                           <span className={`text-xs ml-2 ${requiereVentaRemota ? 'text-yellow-600 font-medium' : 'text-gray-500'}`}>
                             {requiereVentaRemota ? 'Venta remota' : `Stock: ${item.stockDisponible}`}
@@ -993,24 +994,24 @@ export default function POS() {
             </div>
 
             {/* Footer - Total y botón */}
-            <div className="border-t bg-white p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-xl font-semibold text-gray-700">Total:</span>
-                <span className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <div className="border-t bg-white p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <span className="text-lg sm:text-xl font-semibold text-gray-700">Total:</span>
+                <span className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   ${calcularTotal().toFixed(2)}
                 </span>
               </div>
               {!cajaAbierta && (
-                <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-red-50 border border-red-200 rounded text-xs sm:text-sm text-red-700">
                   ⚠️ Debes abrir una caja antes de realizar ventas
                 </div>
               )}
               <button
                 onClick={abrirModalConfirmar}
                 disabled={carrito.length === 0 || !cajaAbierta}
-                className="w-full flex items-center justify-center py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center py-4 sm:py-4 px-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[56px] touch-manipulation"
               >
-                <ShoppingCart className="w-5 h-5 mr-2" />
+                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                 Procesar Venta
               </button>
             </div>
