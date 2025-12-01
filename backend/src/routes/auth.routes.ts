@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { hashPassword, comparePassword } from '../utils/bcrypt';
@@ -22,7 +22,7 @@ const registerSchema = z.object({
 });
 
 // Login
-router.post('/login', authLimiter, async (req, res, next) => {
+router.post('/login', authLimiter, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { username, password } = loginSchema.parse(req.body);
 
@@ -74,7 +74,7 @@ router.post('/login', authLimiter, async (req, res, next) => {
 });
 
 // Register (solo para ADMIN)
-router.post('/register', authenticate, async (req, res, next) => {
+router.post('/register', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (req.user?.role !== 'ADMIN') {
       res.status(403).json({ error: 'Solo los administradores pueden crear usuarios' });
@@ -138,7 +138,7 @@ router.post('/register', authenticate, async (req, res, next) => {
 });
 
 // Refresh token
-router.post('/refresh', async (req, res, next) => {
+router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { refreshToken } = req.body;
 
@@ -177,7 +177,7 @@ router.post('/refresh', async (req, res, next) => {
 });
 
 // Obtener usuario actual
-router.get('/me', authenticate, async (req, res, next) => {
+router.get('/me', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },

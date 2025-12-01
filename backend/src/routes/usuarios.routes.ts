@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, authorize } from '../middleware/auth';
@@ -28,7 +28,7 @@ router.use(authenticate);
 router.use(authorize('ADMIN'));
 
 // GET /usuarios - Listar todos los usuarios
-router.get('/', async (req, res, next) => {
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { role, localId, activo } = req.query;
 
@@ -74,7 +74,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /usuarios/:id - Obtener un usuario
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const usuario = await prisma.user.findUnique({
       where: { id: req.params.id },
@@ -108,7 +108,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // POST /usuarios - Crear usuario
-router.post('/', async (req, res, next) => {
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = usuarioCreateSchema.parse(req.body);
 
@@ -177,7 +177,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // PUT /usuarios/:id - Actualizar usuario
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const usuarioId = req.params.id;
     const data = usuarioUpdateSchema.parse(req.body);
@@ -253,7 +253,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // DELETE /usuarios/:id - Desactivar usuario
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const usuarioId = req.params.id;
 

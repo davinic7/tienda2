@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, filterByLocal } from '../middleware/auth';
@@ -19,7 +19,7 @@ const clienteUpdateSchema = clienteCreateSchema.partial();
 router.use(authenticate);
 
 // GET /clientes - Listar clientes (compartidos entre todos los locales)
-router.get('/', filterByLocal, async (req, res, next) => {
+router.get('/', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { search, page = '1', limit = '50' } = req.query;
 
@@ -65,7 +65,7 @@ router.get('/', filterByLocal, async (req, res, next) => {
 });
 
 // GET /clientes/:id - Obtener un cliente
-router.get('/:id', filterByLocal, async (req, res, next) => {
+router.get('/:id', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cliente = await prisma.cliente.findUnique({
       where: { id: req.params.id },
@@ -98,7 +98,7 @@ router.get('/:id', filterByLocal, async (req, res, next) => {
 });
 
 // POST /clientes - Crear cliente (vendedores y admin pueden crear)
-router.post('/', filterByLocal, async (req, res, next) => {
+router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = clienteCreateSchema.parse(req.body);
 
@@ -145,7 +145,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
 });
 
 // PUT /clientes/:id - Actualizar cliente
-router.put('/:id', filterByLocal, async (req, res, next) => {
+router.put('/:id', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const clienteId = req.params.id;
     const data = clienteUpdateSchema.parse(req.body);
@@ -204,7 +204,7 @@ router.put('/:id', filterByLocal, async (req, res, next) => {
 });
 
 // GET /clientes/buscar/:termino - Buscar clientes rápidamente
-router.get('/buscar/:termino', filterByLocal, async (req, res, next) => {
+router.get('/buscar/:termino', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { termino } = req.params;
 

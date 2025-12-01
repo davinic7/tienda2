@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, authorize } from '../middleware/auth';
 import { z } from 'zod';
@@ -14,7 +14,7 @@ const depositoSchema = z.object({
 });
 
 // GET /api/depositos - Listar depósitos
-router.get('/', authenticate, async (req, res, next) => {
+router.get('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const depositos = await prisma.deposito.findMany({
       where: { activo: true },
@@ -27,7 +27,7 @@ router.get('/', authenticate, async (req, res, next) => {
 });
 
 // GET /api/depositos/:id - Obtener depósito por ID
-router.get('/:id', authenticate, async (req, res, next) => {
+router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const deposito = await prisma.deposito.findUnique({
@@ -45,7 +45,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
 });
 
 // POST /api/depositos - Crear depósito (solo ADMIN)
-router.post('/', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.post('/', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = depositoSchema.parse(req.body);
     const deposito = await prisma.deposito.create({
@@ -58,7 +58,7 @@ router.post('/', authenticate, authorize('ADMIN'), async (req, res, next) => {
 });
 
 // PUT /api/depositos/:id - Actualizar depósito (solo ADMIN)
-router.put('/:id', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const data = depositoSchema.parse(req.body);
@@ -75,7 +75,7 @@ router.put('/:id', authenticate, authorize('ADMIN'), async (req, res, next) => {
 });
 
 // DELETE /api/depositos/:id - Desactivar depósito (solo ADMIN)
-router.delete('/:id', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.delete('/:id', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 

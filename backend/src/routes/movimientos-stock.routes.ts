@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate } from '../middleware/auth';
 import { z } from 'zod';
@@ -7,7 +7,7 @@ const router = Router();
 const prisma = new PrismaClient();
 
 // GET /api/movimientos-stock - Listar movimientos
-router.get('/', authenticate, async (req, res, next) => {
+router.get('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { tipo, productoId, depositoId, localId, fechaDesde, fechaHasta } = req.query;
     const user = (req as any).user;
@@ -58,7 +58,7 @@ router.get('/', authenticate, async (req, res, next) => {
 });
 
 // GET /api/movimientos-stock/:id - Obtener movimiento por ID
-router.get('/:id', authenticate, async (req, res, next) => {
+router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const movimiento = await prisma.movimientoStock.findUnique({

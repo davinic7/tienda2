@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, filterByLocal } from '../middleware/auth';
@@ -29,7 +29,7 @@ const crearVentaSchema = z.object({
 router.use(authenticate);
 
 // POST /ventas - Crear una nueva venta (solo VENDEDOR)
-router.post('/', filterByLocal, async (req, res, next) => {
+router.post('/', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     
@@ -398,7 +398,7 @@ router.post('/', filterByLocal, async (req, res, next) => {
 });
 
 // GET /ventas - Listar ventas (filtrado por local para vendedores)
-router.get('/', filterByLocal, async (req, res, next) => {
+router.get('/', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta, clienteId, estado, page = '1', limit = '50' } = req.query;
@@ -487,7 +487,7 @@ router.get('/', filterByLocal, async (req, res, next) => {
 });
 
 // GET /ventas/:id - Obtener una venta específica
-router.get('/:id', filterByLocal, async (req, res, next) => {
+router.get('/:id', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { id } = req.params;
@@ -536,7 +536,7 @@ router.get('/:id', filterByLocal, async (req, res, next) => {
 });
 
 // PUT /ventas/:id/cancelar - Cancelar una venta
-router.put('/:id/cancelar', filterByLocal, async (req, res, next) => {
+router.put('/:id/cancelar', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { id } = req.params;

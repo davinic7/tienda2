@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, authorize, filterByLocal } from '../middleware/auth';
@@ -9,7 +9,7 @@ const router = Router();
 router.use(authenticate);
 
 // GET /notificaciones - Listar notificaciones
-router.get('/', filterByLocal, async (req, res, next) => {
+router.get('/', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { estado, tipo, localId } = req.query;
     const user = req.user!;
@@ -52,7 +52,7 @@ router.get('/', filterByLocal, async (req, res, next) => {
 });
 
 // GET /notificaciones/pendientes - Obtener notificaciones pendientes
-router.get('/pendientes', filterByLocal, async (req, res, next) => {
+router.get('/pendientes', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const where: any = {
@@ -84,7 +84,7 @@ router.get('/pendientes', filterByLocal, async (req, res, next) => {
 });
 
 // PUT /notificaciones/:id/marcar-leida - Marcar notificación como leída
-router.put('/:id/marcar-leida', filterByLocal, async (req, res, next) => {
+router.put('/:id/marcar-leida', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const notificacion = await prisma.notificacion.findUnique({
       where: { id: req.params.id },
@@ -117,7 +117,7 @@ router.put('/:id/marcar-leida', filterByLocal, async (req, res, next) => {
 });
 
 // PUT /notificaciones/:id/archivar - Archivar notificación
-router.put('/:id/archivar', filterByLocal, async (req, res, next) => {
+router.put('/:id/archivar', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const notificacion = await prisma.notificacion.findUnique({
       where: { id: req.params.id },

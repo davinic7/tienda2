@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, authorize } from '../middleware/auth';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ const pedidoSchema = z.object({
 });
 
 // GET /api/pedidos-almacen - Listar pedidos
-router.get('/', authenticate, async (req, res, next) => {
+router.get('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { estado, localId } = req.query;
     const user = (req as any).user;
@@ -53,7 +53,7 @@ router.get('/', authenticate, async (req, res, next) => {
 });
 
 // GET /api/pedidos-almacen/:id - Obtener pedido por ID
-router.get('/:id', authenticate, async (req, res, next) => {
+router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const user = (req as any).user;
@@ -88,7 +88,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
 });
 
 // POST /api/pedidos-almacen - Crear pedido (VENDEDOR o ADMIN)
-router.post('/', authenticate, async (req, res, next) => {
+router.post('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
     const data = pedidoSchema.parse(req.body);
@@ -131,7 +131,7 @@ router.post('/', authenticate, async (req, res, next) => {
 });
 
 // PUT /api/pedidos-almacen/:id/autorizar - Autorizar pedido (solo ADMIN)
-router.put('/:id/autorizar', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id/autorizar', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const user = (req as any).user;
@@ -162,7 +162,7 @@ router.put('/:id/autorizar', authenticate, authorize('ADMIN'), async (req, res, 
 });
 
 // PUT /api/pedidos-almacen/:id/rechazar - Rechazar pedido (solo ADMIN)
-router.put('/:id/rechazar', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id/rechazar', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const { motivo } = z.object({ motivo: z.string().optional() }).parse(req.body);
@@ -203,7 +203,7 @@ router.put('/:id/rechazar', authenticate, authorize('ADMIN'), async (req, res, n
 });
 
 // PUT /api/pedidos-almacen/:id/procesar - Procesar pedido autorizado (solo ADMIN)
-router.put('/:id/procesar', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id/procesar', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const user = (req as any).user;
@@ -330,7 +330,7 @@ router.put('/:id/procesar', authenticate, authorize('ADMIN'), async (req, res, n
 });
 
 // DELETE /api/pedidos-almacen/:id - Cancelar pedido
-router.delete('/:id', authenticate, async (req, res, next) => {
+router.delete('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const user = (req as any).user;

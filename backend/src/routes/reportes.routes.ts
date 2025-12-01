@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, filterByLocal } from '../middleware/auth';
@@ -9,7 +9,7 @@ const router = Router();
 router.use(authenticate);
 
 // GET /reportes/ventas - Reporte de ventas
-router.get('/ventas', filterByLocal, async (req, res, next) => {
+router.get('/ventas', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta, localId, vendedorId } = req.query;
@@ -91,7 +91,7 @@ router.get('/ventas', filterByLocal, async (req, res, next) => {
 });
 
 // GET /reportes/productos-mas-vendidos - Productos más vendidos
-router.get('/productos-mas-vendidos', filterByLocal, async (req, res, next) => {
+router.get('/productos-mas-vendidos', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta, localId, limite = '10' } = req.query;
@@ -199,7 +199,7 @@ router.get('/productos-mas-vendidos', filterByLocal, async (req, res, next) => {
 });
 
 // GET /reportes/resumen - Resumen general
-router.get('/resumen', filterByLocal, async (req, res, next) => {
+router.get('/resumen', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta, localId } = req.query;
@@ -353,7 +353,7 @@ router.get('/resumen', filterByLocal, async (req, res, next) => {
 });
 
 // GET /reportes/ventas-por-dia - Ventas agrupadas por día
-router.get('/ventas-por-dia', filterByLocal, async (req, res, next) => {
+router.get('/ventas-por-dia', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta, localId } = req.query;
@@ -428,7 +428,7 @@ router.get('/ventas-por-dia', filterByLocal, async (req, res, next) => {
 });
 
 // GET /reportes/ventas-por-metodo-pago - Ventas agrupadas por método de pago
-router.get('/ventas-por-metodo-pago', filterByLocal, async (req, res, next) => {
+router.get('/ventas-por-metodo-pago', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta, localId } = req.query;
@@ -481,7 +481,7 @@ router.get('/ventas-por-metodo-pago', filterByLocal, async (req, res, next) => {
 });
 
 // GET /reportes/ventas-por-vendedor - Ventas agrupadas por vendedor (solo admin)
-router.get('/ventas-por-vendedor', filterByLocal, async (req, res, next) => {
+router.get('/ventas-por-vendedor', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta, localId } = req.query;
@@ -543,7 +543,7 @@ router.get('/ventas-por-vendedor', filterByLocal, async (req, res, next) => {
 });
 
 // GET /reportes/diagnostico - Endpoint de diagnóstico para verificar datos
-router.get('/diagnostico', filterByLocal, async (req, res, next) => {
+router.get('/diagnostico', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
 

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, authorize } from '../middleware/auth';
@@ -19,7 +19,7 @@ router.use(authenticate);
 router.use(authorize('ADMIN'));
 
 // GET /locales - Listar todos los locales
-router.get('/', async (req, res, next) => {
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { activo } = req.query;
 
@@ -49,7 +49,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /locales/:id - Obtener un local
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const local = await prisma.local.findUnique({
       where: { id: req.params.id },
@@ -84,7 +84,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // POST /locales - Crear local
-router.post('/', async (req, res, next) => {
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = localCreateSchema.parse(req.body);
 
@@ -111,7 +111,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // PUT /locales/:id - Actualizar local
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const localId = req.params.id;
     const data = localUpdateSchema.parse(req.body);
@@ -150,7 +150,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // DELETE /locales/:id - Eliminar/Desactivar local
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const localId = req.params.id;
 

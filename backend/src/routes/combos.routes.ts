@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, authorize } from '../middleware/auth';
@@ -31,7 +31,7 @@ const comboUpdateSchema = z.object({
 router.use(authenticate);
 
 // GET /combos - Listar combos
-router.get('/', async (req, res, next) => {
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { activo, search } = req.query;
 
@@ -71,7 +71,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /combos/:id - Obtener un combo
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const combo = await prisma.combo.findUnique({
       where: { id: req.params.id },
@@ -96,7 +96,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // POST /combos - Crear combo (solo ADMIN)
-router.post('/', authorize('ADMIN'), async (req, res, next) => {
+router.post('/', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = comboCreateSchema.parse(req.body);
 
@@ -149,7 +149,7 @@ router.post('/', authorize('ADMIN'), async (req, res, next) => {
 });
 
 // PUT /combos/:id - Actualizar combo (solo ADMIN)
-router.put('/:id', authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const comboId = req.params.id;
     const data = comboUpdateSchema.parse(req.body);
@@ -197,7 +197,7 @@ router.put('/:id', authorize('ADMIN'), async (req, res, next) => {
 });
 
 // PUT /combos/:id/productos - Actualizar productos del combo (solo ADMIN)
-router.put('/:id/productos', authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id/productos', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const comboId = req.params.id;
     const { productos } = req.body;
@@ -250,7 +250,7 @@ router.put('/:id/productos', authorize('ADMIN'), async (req, res, next) => {
 });
 
 // DELETE /combos/:id - Eliminar combo (solo ADMIN)
-router.delete('/:id', authorize('ADMIN'), async (req, res, next) => {
+router.delete('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const combo = await prisma.combo.findUnique({
       where: { id: req.params.id },

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, filterByLocal } from '../middleware/auth';
 import { z } from 'zod';
@@ -17,7 +17,7 @@ const cierreSchema = z.object({
 });
 
 // GET /api/caja/estado - Obtener estado actual de la caja (solo VENDEDOR)
-router.get('/estado', authenticate, filterByLocal, async (req, res, next) => {
+router.get('/estado', authenticate, filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
 
@@ -121,7 +121,7 @@ router.get('/estado', authenticate, filterByLocal, async (req, res, next) => {
 });
 
 // POST /api/caja/apertura - Abrir caja (solo VENDEDOR)
-router.post('/apertura', authenticate, filterByLocal, async (req, res, next) => {
+router.post('/apertura', authenticate, filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
 
@@ -178,7 +178,7 @@ router.post('/apertura', authenticate, filterByLocal, async (req, res, next) => 
 });
 
 // POST /api/caja/cierre/:id - Cerrar caja (solo VENDEDOR)
-router.post('/cierre/:id', authenticate, filterByLocal, async (req, res, next) => {
+router.post('/cierre/:id', authenticate, filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { id } = req.params;
@@ -314,7 +314,7 @@ router.post('/cierre/:id', authenticate, filterByLocal, async (req, res, next) =
 });
 
 // GET /api/caja/historial - Obtener historial de cajas (solo VENDEDOR)
-router.get('/historial', authenticate, filterByLocal, async (req, res, next) => {
+router.get('/historial', authenticate, filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { fechaDesde, fechaHasta } = req.query;

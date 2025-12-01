@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, authorize } from '../middleware/auth';
 import { z } from 'zod';
@@ -14,7 +14,7 @@ const stockSchema = z.object({
 });
 
 // GET /api/stock-deposito - Listar stock de depósito
-router.get('/', authenticate, async (req, res, next) => {
+router.get('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { depositoId, productoId } = req.query;
 
@@ -38,7 +38,7 @@ router.get('/', authenticate, async (req, res, next) => {
 });
 
 // GET /api/stock-deposito/:id - Obtener stock por ID
-router.get('/:id', authenticate, async (req, res, next) => {
+router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const stock = await prisma.stockDeposito.findUnique({
@@ -60,7 +60,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
 });
 
 // POST /api/stock-deposito - Crear o actualizar stock (solo ADMIN)
-router.post('/', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.post('/', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = stockSchema.parse(req.body);
 
@@ -89,7 +89,7 @@ router.post('/', authenticate, authorize('ADMIN'), async (req, res, next) => {
 });
 
 // PUT /api/stock-deposito/:id - Actualizar stock (solo ADMIN)
-router.put('/:id', authenticate, authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const { cantidad, stockMinimo } = z.object({
@@ -116,7 +116,7 @@ router.put('/:id', authenticate, authorize('ADMIN'), async (req, res, next) => {
 });
 
 // GET /api/stock-deposito/alerts/bajo-stock - Alertas de stock bajo
-router.get('/alerts/bajo-stock', authenticate, async (req, res, next) => {
+router.get('/alerts/bajo-stock', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { depositoId } = req.query;
 

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, filterByLocal } from '../middleware/auth';
@@ -19,7 +19,7 @@ const actualizarStockSchema = z.object({
 router.use(authenticate);
 
 // GET /stock - Listar stock del local (vendedor solo ve su local, admin ve todos)
-router.get('/', filterByLocal, async (req, res, next) => {
+router.get('/', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { localId, productoId, stockBajo } = req.query;
@@ -74,7 +74,7 @@ router.get('/', filterByLocal, async (req, res, next) => {
 });
 
 // GET /stock/:productoId/:localId - Obtener stock específico
-router.get('/:productoId/:localId', filterByLocal, async (req, res, next) => {
+router.get('/:productoId/:localId', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { productoId, localId } = req.params;
@@ -110,7 +110,7 @@ router.get('/:productoId/:localId', filterByLocal, async (req, res, next) => {
 });
 
 // PUT /stock/actualizar - Actualizar stock (entrada/salida/ajuste)
-router.put('/actualizar', filterByLocal, async (req, res, next) => {
+router.put('/actualizar', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const data = actualizarStockSchema.parse(req.body);
@@ -226,7 +226,7 @@ router.put('/actualizar', filterByLocal, async (req, res, next) => {
 });
 
 // PUT /stock/:productoId/:localId/minimo - Actualizar stock mínimo
-router.put('/:productoId/:localId/minimo', filterByLocal, async (req, res, next) => {
+router.put('/:productoId/:localId/minimo', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = req.user!;
     const { productoId, localId } = req.params;

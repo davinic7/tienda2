@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/database';
 import { authenticate, authorize, filterByLocal } from '../middleware/auth';
@@ -41,7 +41,7 @@ const productoUpdateSchema = z.object({
 router.use(authenticate);
 
 // GET /productos - Listar productos (ADMIN: todos, VENDEDOR: todos pero solo puede ver)
-router.get('/', filterByLocal, async (req, res, next) => {
+router.get('/', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { search, categoria, activo } = req.query;
 
@@ -124,7 +124,7 @@ router.get('/', filterByLocal, async (req, res, next) => {
 });
 
 // GET /productos/codigo/:codigo - Buscar producto por código de barras
-router.get('/codigo/:codigo', filterByLocal, async (req, res, next) => {
+router.get('/codigo/:codigo', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { codigo } = req.params;
 
@@ -193,7 +193,7 @@ router.get('/codigo/:codigo', filterByLocal, async (req, res, next) => {
 });
 
 // GET /productos/:id - Obtener un producto
-router.get('/:id', filterByLocal, async (req, res, next) => {
+router.get('/:id', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const producto = await prisma.producto.findUnique({
       where: { id: req.params.id },
@@ -219,7 +219,7 @@ router.get('/:id', filterByLocal, async (req, res, next) => {
 
 // POST /productos - Crear producto (solo ADMIN)
 // Al crear solo se ingresa el costo, el sistema calcula el precio sugerido
-router.post('/', authorize('ADMIN'), async (req, res, next) => {
+router.post('/', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = productoCreateSchema.parse(req.body);
 
@@ -291,7 +291,7 @@ router.post('/', authorize('ADMIN'), async (req, res, next) => {
 
 // PUT /productos/:id - Actualizar producto (solo ADMIN)
 // Solo permite actualizar datos básicos, no el precio (ese se hace con la ruta de aprobación)
-router.put('/:id', authorize('ADMIN'), async (req, res, next) => {
+router.put('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const productoId = req.params.id;
     const data = productoUpdateSchema.parse(req.body);
@@ -405,7 +405,7 @@ router.put('/:id', authorize('ADMIN'), async (req, res, next) => {
 });
 
 // DELETE /productos/:id - Eliminar producto (solo ADMIN)
-router.delete('/:id', authorize('ADMIN'), async (req, res, next) => {
+router.delete('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const productoId = req.params.id;
 
@@ -440,7 +440,7 @@ router.delete('/:id', authorize('ADMIN'), async (req, res, next) => {
 });
 
 // GET /productos/codigo/:codigoBarras - Buscar por código de barras
-router.get('/codigo/:codigoBarras', filterByLocal, async (req, res, next) => {
+router.get('/codigo/:codigoBarras', filterByLocal, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const producto = await prisma.producto.findUnique({
       where: { codigoBarras: req.params.codigoBarras },
@@ -474,7 +474,7 @@ router.get('/codigo/:codigoBarras', filterByLocal, async (req, res, next) => {
 });
 
 // POST /productos/:id/aprobar-precio - Aprobar o ajustar precio (solo ADMIN)
-router.post('/:id/aprobar-precio', authorize('ADMIN'), async (req, res, next) => {
+router.post('/:id/aprobar-precio', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const productoId = req.params.id;
     const { precio, porcentajeUtilidad, localId, motivo } = req.body;
@@ -602,7 +602,7 @@ router.post('/:id/aprobar-precio', authorize('ADMIN'), async (req, res, next) =>
 });
 
 // GET /productos/:id/precios-local - Obtener precios por local de un producto
-router.get('/:id/precios-local', authorize('ADMIN'), async (req, res, next) => {
+router.get('/:id/precios-local', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const precios = await prisma.precioLocal.findMany({
       where: { productoId: req.params.id },
@@ -624,7 +624,7 @@ router.get('/:id/precios-local', authorize('ADMIN'), async (req, res, next) => {
 });
 
 // GET /productos/:id/historial-precios - Obtener historial de precios
-router.get('/:id/historial-precios', authorize('ADMIN'), async (req, res, next) => {
+router.get('/:id/historial-precios', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const historial = await prisma.historialPrecio.findMany({
       where: { productoId: req.params.id },
@@ -654,7 +654,7 @@ router.get('/:id/historial-precios', authorize('ADMIN'), async (req, res, next) 
 });
 
 // POST /productos/:id/precios-cantidad - Crear precio por cantidad
-router.post('/:id/precios-cantidad', authorize('ADMIN'), async (req, res, next) => {
+router.post('/:id/precios-cantidad', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { cantidad, precio } = req.body;
 
@@ -688,7 +688,7 @@ router.post('/:id/precios-cantidad', authorize('ADMIN'), async (req, res, next) 
 });
 
 // DELETE /productos/:id/precios-cantidad/:precioId - Eliminar precio por cantidad
-router.delete('/:id/precios-cantidad/:precioId', authorize('ADMIN'), async (req, res, next) => {
+router.delete('/:id/precios-cantidad/:precioId', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     await prisma.precioPorCantidad.update({
       where: { id: req.params.precioId },
