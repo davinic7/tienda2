@@ -28,6 +28,13 @@ export function printTicket(
     vendedor?: string;
     cliente?: string;
     local?: string;
+    creditoUsado?: number;
+    creditoRestante?: number;
+    montoRecibido?: number;
+    detallesPago?: {
+      efectivo: number;
+      otro: number;
+    };
   },
   config: TicketConfig = { width: 58 }
 ): void {
@@ -163,13 +170,30 @@ export function printTicket(
         </div>
       ` : ''}
       
+      ${content.creditoUsado && content.creditoUsado > 0 ? `
+        <div class="info" style="text-align: right;">
+          <p>Crédito aplicado: -$${content.creditoUsado.toFixed(2)}</p>
+        </div>
+      ` : ''}
+      
       <div class="total">
         TOTAL: $${content.total.toFixed(2)}
       </div>
       
+      <div class="divider"></div>
+      
       <div class="info">
         <p><strong>Método de Pago:</strong> ${content.metodoPago.replace(/_/g, ' ')}</p>
-        ${content.cambio ? `<p><strong>Cambio:</strong> $${content.cambio.toFixed(2)}</p>` : ''}
+        ${content.montoRecibido ? `<p><strong>Monto Recibido:</strong> $${content.montoRecibido.toFixed(2)}</p>` : ''}
+        ${content.detallesPago ? `
+          <p><strong>Detalle de Pago:</strong></p>
+          <p style="margin-left: 10px;">Efectivo: $${content.detallesPago.efectivo.toFixed(2)}</p>
+          <p style="margin-left: 10px;">Otro: $${content.detallesPago.otro.toFixed(2)}</p>
+        ` : ''}
+        ${content.cambio && content.cambio > 0 ? `<p><strong>Cambio:</strong> $${content.cambio.toFixed(2)}</p>` : ''}
+        ${content.creditoRestante !== undefined && content.creditoRestante >= 0 ? `
+          <p><strong>Crédito Restante:</strong> $${content.creditoRestante.toFixed(2)}</p>
+        ` : ''}
       </div>
       
       <div class="footer">
