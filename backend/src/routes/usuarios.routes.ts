@@ -11,14 +11,14 @@ const usuarioCreateSchema = z.object({
   username: z.string().min(3),
   password: z.string().min(6),
   nombre: z.string().min(2),
-  role: z.enum(['ADMIN', 'VENDEDOR']),
+  role: z.enum(['ADMIN', 'VENDEDOR', 'ALMACEN']),
   localId: z.string().uuid().optional().nullable(),
 });
 
 const usuarioUpdateSchema = z.object({
   nombre: z.string().min(2).optional(),
   password: z.string().min(6).optional(),
-  role: z.enum(['ADMIN', 'VENDEDOR']).optional(),
+  role: z.enum(['ADMIN', 'VENDEDOR', 'ALMACEN']).optional(),
   localId: z.string().uuid().optional().nullable(),
   activo: z.boolean().optional(),
 });

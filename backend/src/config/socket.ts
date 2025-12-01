@@ -59,8 +59,8 @@ export const initializeSocket = (httpServer: HTTPServer): SocketIOServer => {
       socket.join(`local:${user.localId}`);
     }
 
-    // Los admins escuchan todos los locales
-    if (user.role === 'ADMIN') {
+    // Los admins y almacén escuchan todos los locales
+    if (user.role === 'ADMIN' || user.role === 'ALMACEN') {
       socket.join('admin');
     }
 

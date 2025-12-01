@@ -6,13 +6,14 @@ import api from '@/lib/api';
 import Layout from '@/components/Layout';
 import ModalCaja from '@/components/ModalCaja';
 import toast from 'react-hot-toast';
-import { DollarSign, ShoppingCart, Users, Package, AlertCircle } from 'lucide-react';
+import { DollarSign, ShoppingCart, Users, Package, AlertCircle, Warehouse, ShoppingBag, PackageSearch } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuthStore();
   const [mostrarModalCaja, setMostrarModalCaja] = useState(false);
   // const [modoCaja] = useState<'apertura' | 'cierre' | 'auto'>('auto');
   const [estadisticas, setEstadisticas] = useState<any>(null);
+  const [estadisticasAlmacen, setEstadisticasAlmacen] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,16 +49,32 @@ export default function Dashboard() {
   const cargarEstadisticas = useCallback(async () => {
     try {
       setLoading(true);
-      // Obtener resumen del día
-      const hoy = new Date().toISOString().split('T')[0];
-      const response = await api.get(`/reportes/resumen?fechaDesde=${hoy}&fechaHasta=${hoy}`);
-      setEstadisticas(response.data.resumen);
+      
+      // Si es usuario ALMACEN, cargar estadísticas de almacén
+      if (user?.role === 'ALMACEN') {
+        const [pedidosResponse, stockBajoResponse] = await Promise.all([
+          api.get('/pedidos-almacen?estado=PENDIENTE'),
+          api.get('/stock-deposito/alerts/bajo-stock'),
+        ]);
+        
+        setEstadisticasAlmacen({
+          pedidosPendientes: pedidosResponse.data.length,
+          productosStockBajo: stockBajoResponse.data.length,
+          pedidos: pedidosResponse.data,
+          stockBajo: stockBajoResponse.data,
+        });
+      } else {
+        // Para otros roles, cargar estadísticas normales
+        const hoy = new Date().toISOString().split('T')[0];
+        const response = await api.get(`/reportes/resumen?fechaDesde=${hoy}&fechaHasta=${hoy}`);
+        setEstadisticas(response.data.resumen);
+      }
     } catch (error: any) {
       console.error('Error al cargar estadísticas:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.role]);
 
   useEffect(() => {
     cargarEstadisticas();
@@ -118,7 +135,45 @@ export default function Dashboard() {
     };
   }, [cargarEstadisticas]);
 
-  const cards = [
+  // Cards diferentes según el rol
+  const cards = user?.role === 'ALMACEN' ? [
+    {
+      title: 'Pedidos Pendientes',
+      value: estadisticasAlmacen?.pedidosPendientes || 0,
+      icon: ShoppingBag,
+      color: 'from-orange-500 to-orange-600',
+      textColor: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      link: '/dashboard/pedidos-almacen?estado=PENDIENTE',
+    },
+    {
+      title: 'Productos Stock Bajo',
+      value: estadisticasAlmacen?.productosStockBajo || 0,
+      icon: AlertCircle,
+      color: 'from-red-500 to-red-600',
+      textColor: 'text-red-600',
+      bgColor: 'bg-red-50',
+      link: '/dashboard/stock-deposito',
+    },
+    {
+      title: 'Stock Depósito',
+      description: 'Gestionar inventario',
+      icon: PackageSearch,
+      color: 'from-blue-500 to-blue-600',
+      textColor: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      link: '/dashboard/stock-deposito',
+    },
+    {
+      title: 'Pedidos Almacén',
+      description: 'Ver todos los pedidos',
+      icon: Warehouse,
+      color: 'from-purple-500 to-purple-600',
+      textColor: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      link: '/dashboard/pedidos-almacen',
+    },
+  ] : [
     {
       title: 'Ventas de Hoy',
       value: estadisticas?.ventasHoy || 0,
@@ -160,7 +215,36 @@ export default function Dashboard() {
     },
   ];
 
-  const quickActions = [
+  // Acciones rápidas diferentes según el rol
+  const quickActions = user?.role === 'ALMACEN' ? [
+    {
+      title: 'Gestionar Stock Depósito',
+      description: 'Ver y actualizar stock del almacén',
+      icon: PackageSearch,
+      color: 'from-blue-500 to-blue-600',
+      link: '/dashboard/stock-deposito',
+      buttonText: 'Ver Stock',
+      visible: true,
+    },
+    {
+      title: 'Pedidos Pendientes',
+      description: 'Revisar y autorizar pedidos',
+      icon: ShoppingBag,
+      color: 'from-orange-500 to-orange-600',
+      link: '/dashboard/pedidos-almacen?estado=PENDIENTE',
+      buttonText: 'Ver Pedidos',
+      visible: true,
+    },
+    {
+      title: 'Todos los Pedidos',
+      description: 'Ver historial completo de pedidos',
+      icon: Warehouse,
+      color: 'from-purple-500 to-purple-600',
+      link: '/dashboard/pedidos-almacen',
+      buttonText: 'Ver Historial',
+      visible: true,
+    },
+  ] : [
     {
       title: 'Nueva Venta',
       description: 'Iniciar punto de venta',
@@ -190,7 +274,7 @@ export default function Dashboard() {
       color: 'from-green-600 to-emerald-600',
       link: '/dashboard/productos',
       buttonText: 'Ver Productos',
-      visible: true,
+      visible: user?.role !== 'ALMACEN',
     },
     {
       title: 'Ver Stock',
@@ -199,7 +283,7 @@ export default function Dashboard() {
       color: 'from-emerald-500 to-green-600',
       link: '/dashboard/stock',
       buttonText: 'Gestionar Stock',
-      visible: true,
+      visible: user?.role !== 'ALMACEN',
     },
   ].filter((item) => item.visible !== false);
 
@@ -214,6 +298,8 @@ export default function Dashboard() {
           <p className="text-gray-600">
             {user?.role === 'ADMIN'
               ? 'Panel de administración - Gestión completa del sistema'
+              : user?.role === 'ALMACEN'
+              ? 'Panel de almacén - Gestión de inventario y pedidos'
               : `Vendedor en ${user?.local?.nombre || 'tu local asignado'}`}
           </p>
         </div>
@@ -235,7 +321,9 @@ export default function Dashboard() {
                       {loading ? (
                         <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
                       ) : (
-                        <p className={`text-2xl font-bold ${card.textColor}`}>{card.value}</p>
+                        <p className={`text-2xl font-bold ${card.textColor}`}>
+                          {card.value !== undefined ? card.value : card.description || '0'}
+                        </p>
                       )}
                     </div>
                     <div className={`p-3 rounded-lg bg-gradient-to-br ${card.color} shadow-md`}>
@@ -248,6 +336,53 @@ export default function Dashboard() {
             );
           })}
         </div>
+        
+        {/* Lista de pedidos pendientes para ALMACEN */}
+        {user?.role === 'ALMACEN' && estadisticasAlmacen?.pedidos && estadisticasAlmacen.pedidos.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Pedidos Pendientes de Autorización</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="divide-y divide-gray-200">
+                {estadisticasAlmacen.pedidos.slice(0, 5).map((pedido: any) => (
+                  <Link
+                    key={pedido.id}
+                    to={`/dashboard/pedidos-almacen`}
+                    className="block p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          Pedido de {pedido.local?.nombre || 'Local'}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {pedido.detalles?.length || 0} productos • Solicitado por {pedido.solicitante?.nombre || 'Usuario'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(pedido.fechaSolicitud).toLocaleString('es-ES')}
+                        </p>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                          Pendiente
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {estadisticasAlmacen.pedidos.length > 5 && (
+                <div className="p-4 bg-gray-50 text-center">
+                  <Link
+                    to="/dashboard/pedidos-almacen?estado=PENDIENTE"
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Ver todos los pedidos pendientes ({estadisticasAlmacen.pedidos.length})
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Acciones rápidas */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">

@@ -59,8 +59,8 @@ router.get('/:id', authenticate, async (req: Request, res: Response, next: NextF
   }
 });
 
-// POST /api/stock-deposito - Crear o actualizar stock (solo ADMIN)
-router.post('/', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
+// POST /api/stock-deposito - Crear o actualizar stock (ADMIN o ALMACEN)
+router.post('/', authenticate, authorize('ADMIN', 'ALMACEN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = stockSchema.parse(req.body);
 
@@ -88,8 +88,8 @@ router.post('/', authenticate, authorize('ADMIN'), async (req: Request, res: Res
   }
 });
 
-// PUT /api/stock-deposito/:id - Actualizar stock (solo ADMIN)
-router.put('/:id', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
+// PUT /api/stock-deposito/:id - Actualizar stock (ADMIN o ALMACEN)
+router.put('/:id', authenticate, authorize('ADMIN', 'ALMACEN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const { cantidad, stockMinimo } = z.object({

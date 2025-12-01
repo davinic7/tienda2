@@ -114,20 +114,29 @@ export default function Layout({ children }: LayoutProps) {
   }, [sidebarOpen]);
 
   const menuItems = [
+    // Dashboard - todos los roles
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visible: true },
+    
+    // Menú específico para ALMACEN
+    { path: '/dashboard/stock-deposito', label: 'Stock Depósito', icon: PackageSearch, visible: user?.role === 'ADMIN' || user?.role === 'ALMACEN' },
+    { path: '/dashboard/pedidos-almacen', label: 'Pedidos Almacén', icon: ShoppingBag, visible: user?.role === 'ADMIN' || user?.role === 'ALMACEN' || user?.role === 'VENDEDOR' },
+    { path: '/dashboard/depositos', label: 'Depósitos', icon: Warehouse, visible: user?.role === 'ADMIN' },
+    
+    // Menú para VENDEDOR
     { path: '/pos', label: 'Punto de Venta', icon: ShoppingCart, visible: user?.role === 'VENDEDOR' },
+    
+    // Menú para ADMIN
     { path: '/dashboard/productos', label: 'Productos', icon: Package, visible: user?.role === 'ADMIN' },
     { path: '/dashboard/combos', label: 'Combos', icon: Gift, visible: user?.role === 'ADMIN' },
-    { path: '/dashboard/ventas', label: 'Ventas', icon: FileText, visible: true },
-    { path: '/dashboard/clientes', label: 'Clientes', icon: Users, visible: true },
-    { path: '/dashboard/stock', label: 'Stock', icon: Box, visible: true },
-    { path: '/dashboard/reportes', label: 'Reportes', icon: TrendingUp, visible: true },
-    { path: '/dashboard/notificaciones', label: 'Notificaciones', icon: Bell, visible: true },
     { path: '/dashboard/locales', label: 'Locales', icon: Store, visible: user?.role === 'ADMIN' },
     { path: '/dashboard/usuarios', label: 'Usuarios', icon: Users, visible: user?.role === 'ADMIN' },
-        { path: '/dashboard/depositos', label: 'Depósitos', icon: Warehouse, visible: user?.role === 'ADMIN' },
-        { path: '/dashboard/stock-deposito', label: 'Stock Depósito', icon: PackageSearch, visible: user?.role === 'ADMIN' },
-        { path: '/dashboard/pedidos-almacen', label: 'Pedidos Almacén', icon: ShoppingBag, visible: true },
+    
+    // Menú compartido (no para ALMACEN)
+    { path: '/dashboard/ventas', label: 'Ventas', icon: FileText, visible: user?.role !== 'ALMACEN' },
+    { path: '/dashboard/clientes', label: 'Clientes', icon: Users, visible: user?.role !== 'ALMACEN' },
+    { path: '/dashboard/stock', label: 'Stock', icon: Box, visible: user?.role !== 'ALMACEN' },
+    { path: '/dashboard/reportes', label: 'Reportes', icon: TrendingUp, visible: user?.role !== 'ALMACEN' },
+    { path: '/dashboard/notificaciones', label: 'Notificaciones', icon: Bell, visible: user?.role !== 'ALMACEN' },
   ].filter((item) => item.visible);
 
   const isActive = (path: string) => {
