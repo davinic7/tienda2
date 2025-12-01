@@ -37,7 +37,16 @@ npm install && npm run build
 
 **IMPORTANTE**: Debe ejecutarse desde la raíz del proyecto para que npm workspaces instale correctamente todas las dependencias.
 
-### 2. Start Command
+### 2. Pre-Deploy Command (Recomendado)
+```
+cd backend && npx prisma db push
+```
+
+**IMPORTANTE**: Este comando crea/actualiza las tablas en la base de datos antes de iniciar el servidor. Se ejecuta automáticamente después del build y antes del start.
+
+**Nota**: Si prefieres no ejecutarlo automáticamente, puedes dejarlo vacío y ejecutar las migraciones manualmente usando el Shell de Render cuando sea necesario.
+
+### 3. Start Command
 ```
 npm start
 ```
