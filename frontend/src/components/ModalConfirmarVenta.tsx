@@ -436,67 +436,102 @@ export default function ModalConfirmarVenta({
                 </div>
               )}
 
-              {/* Cliente */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cliente (Opcional)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    value={busquedaCliente}
-                    onChange={(e) => {
-                      setBusquedaCliente(e.target.value);
-                      if (!e.target.value) {
-                        setCliente(null);
-                        onClienteSeleccionado(null);
-                      }
-                    }}
-                    onFocus={() => buscarClientes()}
-                    placeholder="Buscar cliente..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                  {!cliente && (
-                    <button
-                      onClick={() => setMostrarCrearCliente(true)}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-green-600 hover:bg-green-50 rounded"
-                      title="Crear nuevo cliente"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
-                  )}
-                  {busquedaCliente && clientesSugeridos.length > 0 && !cliente && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {clientesSugeridos.map((c) => (
-                        <button
-                          key={c.id}
-                          onClick={() => {
-                            setCliente(c);
-                            onClienteSeleccionado(c);
-                            setBusquedaCliente(c.nombre);
-                            setClientesSugeridos([]);
-                          }}
-                          className="w-full text-left px-4 py-2 hover:bg-green-50 transition-colors"
-                        >
-                          <div className="font-medium text-gray-900">{c.nombre}</div>
-                          {c.telefono && (
-                            <div className="text-sm text-gray-500">{c.telefono}</div>
-                          )}
-                        </button>
-                      ))}
+              {/* Paso 1: Cliente */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border-2 border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                      1
                     </div>
-                  )}
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Cliente</h3>
+                      <p className="text-xs text-gray-600">Vincula un cliente a esta venta (opcional)</p>
+                    </div>
+                  </div>
                 </div>
-                {cliente && (
-                  <div className="mt-2 space-y-2">
-                    <div className="flex items-center justify-between px-3 py-2 bg-green-50 rounded-lg border border-green-200">
-                      <div>
-                        <span className="text-sm font-medium text-green-900">{cliente.nombre}</span>
-                        {cliente.telefono && (
-                          <span className="text-xs text-green-700 ml-2">{cliente.telefono}</span>
+                
+                {!cliente ? (
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={busquedaCliente}
+                        onChange={(e) => {
+                          setBusquedaCliente(e.target.value);
+                          if (!e.target.value) {
+                            setCliente(null);
+                            onClienteSeleccionado(null);
+                          }
+                        }}
+                        onFocus={() => buscarClientes()}
+                        placeholder="Buscar por nombre, teléfono o email..."
+                        className="block w-full pl-10 pr-12 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base"
+                      />
+                      <button
+                        onClick={() => setMostrarCrearCliente(true)}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Crear nuevo cliente"
+                      >
+                        <Plus className="w-5 h-5" />
+                      </button>
+                    </div>
+                    {busquedaCliente && clientesSugeridos.length > 0 && (
+                      <div className="bg-white border-2 border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {clientesSugeridos.map((c) => (
+                          <button
+                            key={c.id}
+                            onClick={() => {
+                              setCliente(c);
+                              onClienteSeleccionado(c);
+                              setBusquedaCliente(c.nombre);
+                              setClientesSugeridos([]);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-green-50 transition-colors border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="font-semibold text-gray-900">{c.nombre}</div>
+                            <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                              {c.telefono && <span>📞 {c.telefono}</span>}
+                              {c.email && <span>✉️ {c.email}</span>}
+                              {getCreditoAsNumber(c.credito) > 0 && (
+                                <span className="text-blue-600 font-medium">
+                                  💳 ${getCreditoAsNumber(c.credito).toFixed(2)} crédito
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-200 shadow-sm">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            {cliente.nombre.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900 text-lg">{cliente.nombre}</h4>
+                            <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                              {cliente.telefono && <span>📞 {cliente.telefono}</span>}
+                              {cliente.email && <span>✉️ {cliente.email}</span>}
+                            </div>
+                          </div>
+                        </div>
+                        {getCreditoAsNumber(cliente.credito) > 0 && (
+                          <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <CreditCard className="w-5 h-5 text-blue-600 mr-2" />
+                                <span className="text-sm font-medium text-blue-900">Crédito disponible:</span>
+                              </div>
+                              <span className="text-xl font-bold text-blue-900">${getCreditoAsNumber(cliente.credito).toFixed(2)}</span>
+                            </div>
+                          </div>
                         )}
                       </div>
                       <button
@@ -508,16 +543,10 @@ export default function ModalConfirmarVenta({
                           setMontoCredito('');
                           setDepositarRestoACredito(false);
                         }}
-                        className="text-green-600 hover:text-green-800"
+                        className="ml-3 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-5 h-5" />
                       </button>
-                    </div>
-                    <div className="px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-medium text-blue-700">Crédito disponible:</span>
-                        <span className="text-sm font-bold text-blue-900">${getCreditoAsNumber(cliente.credito).toFixed(2)}</span>
-                      </div>
                     </div>
                   </div>
                 )}
@@ -568,14 +597,19 @@ export default function ModalConfirmarVenta({
                 </div>
               )}
 
-              {/* Opciones de Crédito */}
-              {cliente && (cliente.credito || 0) > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center text-sm font-medium text-gray-700">
-                      <CreditCard className="w-4 h-4 mr-2 text-blue-600" />
-                      Usar Crédito del Cliente
-                    </label>
+              {/* Paso 2: Uso de Crédito */}
+              {cliente && getCreditoAsNumber(cliente.credito) > 0 && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border-2 border-blue-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                        2
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Usar Crédito</h3>
+                        <p className="text-xs text-gray-600">Aplica el crédito disponible del cliente</p>
+                      </div>
+                    </div>
                     <button
                       type="button"
                       onClick={() => {
@@ -584,57 +618,100 @@ export default function ModalConfirmarVenta({
                           setMontoCredito('');
                         }
                       }}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
                         usarCredito ? 'bg-blue-600' : 'bg-gray-300'
                       }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-md ${
                           usarCredito ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
                     </button>
                   </div>
+                  
                   {usarCredito && (
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Monto de Crédito a Usar (Opcional - usa todo si está vacío)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max={Math.min(getCreditoAsNumber(cliente.credito), calcularTotal())}
-                        value={montoCredito}
-                        onChange={(e) => setMontoCredito(e.target.value)}
-                        placeholder={`Máximo: $${Math.min(getCreditoAsNumber(cliente.credito), calcularTotal()).toFixed(2)}`}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Crédito disponible: ${getCreditoAsNumber(cliente.credito).toFixed(2)} | Total venta: ${calcularTotal().toFixed(2)}
-                      </p>
+                    <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-3">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <div className="text-gray-600 mb-1">Crédito disponible</div>
+                          <div className="text-xl font-bold text-blue-600">${getCreditoAsNumber(cliente.credito).toFixed(2)}</div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <div className="text-gray-600 mb-1">Total venta</div>
+                          <div className="text-xl font-bold text-gray-900">${calcularTotal().toFixed(2)}</div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Monto específico a usar (opcional)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max={Math.min(getCreditoAsNumber(cliente.credito), calcularTotal())}
+                          value={montoCredito}
+                          onChange={(e) => setMontoCredito(e.target.value)}
+                          placeholder={`Dejar vacío para usar todo (máx. $${Math.min(getCreditoAsNumber(cliente.credito), calcularTotal()).toFixed(2)})`}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base font-semibold"
+                        />
+                        <p className="text-xs text-gray-500 mt-2">
+                          💡 Si dejas vacío, se usará automáticamente el menor entre el crédito disponible y el total de la venta
+                        </p>
+                      </div>
+                      
+                      {usarCredito && (
+                        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="text-gray-700">Crédito a usar:</span>
+                            <span className="font-bold text-green-700">
+                              ${(montoCredito ? Math.min(parseFloat(montoCredito) || 0, getCreditoAsNumber(cliente.credito), calcularTotal()) : Math.min(getCreditoAsNumber(cliente.credito), calcularTotal())).toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-700">Total después del crédito:</span>
+                            <span className="font-bold text-lg text-gray-900">${calcularTotalAPagar().toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Método de Pago */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Método de Pago <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
+              {/* Paso 3: Método de Pago */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border-2 border-purple-200">
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                    3
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Método de Pago</h3>
+                    <p className="text-xs text-gray-600">Selecciona cómo se realizará el pago</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
-                    { value: 'EFECTIVO', label: 'Efectivo', icon: DollarSign },
-                    { value: 'CREDITO', label: 'Crédito', icon: CreditCard },
-                    { value: 'MIXTO', label: 'Mixto', icon: CreditCard },
-                    { value: 'DEBITO', label: 'Débito', icon: CreditCard },
-                    { value: 'QR', label: 'QR', icon: CreditCard },
-                    { value: 'TARJETA_CREDITO', label: 'Tarjeta Crédito', icon: CreditCard },
-                    { value: 'TRANSFERENCIA', label: 'Transferencia', icon: CreditCard },
+                    { value: 'EFECTIVO', label: 'Efectivo', icon: DollarSign, color: 'green' },
+                    { value: 'DEBITO', label: 'Débito', icon: CreditCard, color: 'blue' },
+                    { value: 'TARJETA_CREDITO', label: 'Tarjeta Crédito', icon: CreditCard, color: 'purple' },
+                    { value: 'QR', label: 'QR', icon: CreditCard, color: 'indigo' },
+                    { value: 'TRANSFERENCIA', label: 'Transferencia', icon: CreditCard, color: 'teal' },
+                    { value: 'MIXTO', label: 'Mixto', icon: CreditCard, color: 'orange' },
                   ].map((metodo) => {
                     const Icon = metodo.icon;
                     const isSelected = metodoPago === metodo.value;
+                    const colorClasses = {
+                      green: isSelected ? 'border-green-600 bg-green-50 text-green-700 shadow-lg' : 'border-gray-300 hover:border-green-400 hover:bg-green-50',
+                      blue: isSelected ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-lg' : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50',
+                      purple: isSelected ? 'border-purple-600 bg-purple-50 text-purple-700 shadow-lg' : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50',
+                      indigo: isSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-lg' : 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50',
+                      teal: isSelected ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-lg' : 'border-gray-300 hover:border-teal-400 hover:bg-teal-50',
+                      orange: isSelected ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-lg' : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50',
+                    };
                     return (
                       <button
                         key={metodo.value}
@@ -643,16 +720,18 @@ export default function ModalConfirmarVenta({
                           setMetodoPago(metodo.value as MetodoPago);
                           setMontoEfectivo('');
                           setMontoOtro('');
-                          // No prellenar, dejar vacío para que el usuario ingrese directamente
                         }}
-                        className={`flex items-center justify-center px-4 py-3 border-2 rounded-lg transition-all font-medium ${
+                        className={`flex flex-col items-center justify-center px-4 py-4 border-2 rounded-xl transition-all font-medium min-h-[80px] ${
                           isSelected
-                            ? 'border-green-600 bg-green-50 text-green-700 shadow-md'
-                            : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50'
+                            ? colorClasses[metodo.color as keyof typeof colorClasses]
+                            : 'bg-white text-gray-700 border-gray-300 hover:shadow-md'
                         }`}
                       >
-                        <Icon className="w-5 h-5 mr-2" />
-                        {metodo.label}
+                        <Icon className={`w-6 h-6 mb-2 ${isSelected ? '' : 'text-gray-400'}`} />
+                        <span className="text-sm font-semibold">{metodo.label}</span>
+                        {isSelected && (
+                          <div className="mt-1 w-2 h-2 bg-current rounded-full"></div>
+                        )}
                       </button>
                     );
                   })}
@@ -743,17 +822,42 @@ export default function ModalConfirmarVenta({
                     </div>
                   )}
                   {cliente && parseFloat(montoEfectivo) > calcularTotalAPagar() && (
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="depositarRestoACredito"
-                        checked={depositarRestoACredito}
-                        onChange={(e) => setDepositarRestoACredito(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <label htmlFor="depositarRestoACredito" className="text-sm text-gray-700">
-                        Depositar el resto (${(parseFloat(montoEfectivo) - calcularTotalAPagar()).toFixed(2)}) al crédito del cliente
-                      </label>
+                    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <input
+                          type="checkbox"
+                          id="depositarRestoACredito"
+                          checked={depositarRestoACredito}
+                          onChange={(e) => setDepositarRestoACredito(e.target.checked)}
+                          className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
+                        />
+                        <div className="flex-1">
+                          <label htmlFor="depositarRestoACredito" className="text-sm font-semibold text-gray-900 cursor-pointer block">
+                            💰 Depositar cambio a crédito del cliente
+                          </label>
+                          <p className="text-xs text-gray-600 mt-1">
+                            El cambio de ${(parseFloat(montoEfectivo) - calcularTotalAPagar()).toFixed(2)} se agregará automáticamente al crédito de <strong>{cliente.nombre}</strong>
+                          </p>
+                          {depositarRestoACredito && (
+                            <div className="mt-3 p-2 bg-white rounded border border-blue-300">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-700">Crédito actual:</span>
+                                <span className="font-bold text-blue-600">${getCreditoAsNumber(cliente.credito).toFixed(2)}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm mt-1">
+                                <span className="text-gray-700">+ Depósito:</span>
+                                <span className="font-bold text-green-600">+${(parseFloat(montoEfectivo) - calcularTotalAPagar()).toFixed(2)}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm mt-2 pt-2 border-t border-gray-200">
+                                <span className="font-semibold text-gray-900">Nuevo crédito:</span>
+                                <span className="font-bold text-lg text-blue-700">
+                                  ${(getCreditoAsNumber(cliente.credito) + (parseFloat(montoEfectivo) - calcularTotalAPagar())).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -865,20 +969,103 @@ export default function ModalConfirmarVenta({
           )}
         </div>
 
+        {/* Resumen Final */}
+        {!ventaCompletada && (
+          <div className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6">
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                  ✓
+                </div>
+                Resumen de la Venta
+              </h3>
+              <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm space-y-3">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-gray-600 mb-1">Total de productos</div>
+                    <div className="text-xl font-bold text-gray-900">{carrito.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-600 mb-1">Total venta</div>
+                    <div className="text-xl font-bold text-gray-900">${total.toFixed(2)}</div>
+                  </div>
+                </div>
+                
+                {usarCredito && cliente && (
+                  <div className="pt-3 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-gray-600">Crédito aplicado:</span>
+                      <span className="font-bold text-blue-600">
+                        -${(montoCredito ? Math.min(parseFloat(montoCredito) || 0, getCreditoAsNumber(cliente.credito), total) : Math.min(getCreditoAsNumber(cliente.credito), total)).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-900">Total a pagar:</span>
+                      <span className="text-2xl font-bold text-green-600">${calcularTotalAPagar().toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {cliente && (
+                  <div className="pt-3 border-t border-gray-200">
+                    <div className="text-xs text-gray-600 mb-2">Cliente vinculado:</div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-900">{cliente.nombre}</span>
+                      {getCreditoAsNumber(cliente.credito) > 0 && (
+                        <span className="text-sm text-blue-600">
+                          Crédito: ${getCreditoAsNumber(cliente.credito).toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    {(usarCredito || depositarRestoACredito) && (
+                      <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200 text-xs">
+                        {usarCredito && (
+                          <div className="text-blue-800">
+                            ⚡ El crédito se descontará automáticamente
+                          </div>
+                        )}
+                        {depositarRestoACredito && metodoPago === MetodoPago.EFECTIVO && montoEfectivo && parseFloat(montoEfectivo) > calcularTotalAPagar() && (
+                          <div className="text-blue-800 mt-1">
+                            💰 ${(parseFloat(montoEfectivo) - calcularTotalAPagar()).toFixed(2)} se agregará al crédito
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="pt-3 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Método de pago:</span>
+                    <span className="font-bold text-gray-900">
+                      {metodoPago === 'EFECTIVO' ? '💵 Efectivo' :
+                       metodoPago === 'DEBITO' ? '💳 Débito' :
+                       metodoPago === 'TARJETA_CREDITO' ? '💳 Tarjeta Crédito' :
+                       metodoPago === 'QR' ? '📱 QR' :
+                       metodoPago === 'TRANSFERENCIA' ? '🏦 Transferencia' :
+                       metodoPago === 'MIXTO' ? '💳 Mixto' : metodoPago}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         {!ventaCompletada && (
-          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-white">
             <button
               onClick={onClose}
               disabled={procesando}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 font-medium"
             >
               Cancelar
             </button>
             <button
               onClick={confirmarVenta}
               disabled={procesando || carrito.length === 0}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center"
+              className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-bold text-lg flex items-center shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               {procesando ? (
                 <>
@@ -887,7 +1074,7 @@ export default function ModalConfirmarVenta({
                 </>
               ) : (
                 <>
-                  <Check className="w-5 h-5 mr-2" />
+                  <Check className="w-6 h-6 mr-2" />
                   Confirmar Venta
                 </>
               )}

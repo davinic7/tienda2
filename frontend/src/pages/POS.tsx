@@ -607,44 +607,82 @@ export default function POS() {
           {/* Panel izquierdo - Búsqueda */}
           <div className="w-full lg:w-1/2 lg:border-r bg-white overflow-y-auto flex flex-col">
             {/* Búsqueda de cliente */}
-            <div className="p-4 border-b bg-gray-50">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-gray-100">
+              <label className="block text-sm font-bold text-gray-900 mb-3 flex items-center">
+                <User className="w-4 h-4 mr-2 text-green-600" />
                 Cliente (opcional)
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  value={busquedaCliente}
-                  onChange={(e) => {
-                    setBusquedaCliente(e.target.value);
-                    setMostrandoBusquedaCliente(true);
-                  }}
-                  onFocus={() => setMostrandoBusquedaCliente(true)}
-                  placeholder="Buscar cliente..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                {mostrandoBusquedaCliente && clientesSugeridos.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    {clientesSugeridos.map((c) => (
-                      <button
-                        key={c.id}
-                        onClick={() => {
-                          setCliente(c);
-                          setBusquedaCliente(c.nombre);
-                          setMostrandoBusquedaCliente(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-green-50 transition-colors"
-                      >
-                        <div className="font-medium text-gray-900">{c.nombre}</div>
-                        {c.email && <div className="text-sm text-gray-600">{c.email}</div>}
-                      </button>
-                    ))}
+              {!cliente ? (
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
                   </div>
-                )}
-              </div>
+                  <input
+                    type="text"
+                    value={busquedaCliente}
+                    onChange={(e) => {
+                      setBusquedaCliente(e.target.value);
+                      setMostrandoBusquedaCliente(true);
+                    }}
+                    onFocus={() => setMostrandoBusquedaCliente(true)}
+                    placeholder="Buscar por nombre, teléfono o email..."
+                    className="block w-full pl-10 pr-3 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                  />
+                  {mostrandoBusquedaCliente && clientesSugeridos.length > 0 && (
+                    <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                      {clientesSugeridos.map((c) => (
+                        <button
+                          key={c.id}
+                          onClick={() => {
+                            setCliente(c);
+                            setBusquedaCliente(c.nombre);
+                            setMostrandoBusquedaCliente(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-green-50 transition-colors border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-semibold text-gray-900">{c.nombre}</div>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
+                            {c.telefono && <span>📞 {c.telefono}</span>}
+                            {c.email && <span>✉️ {c.email}</span>}
+                            {getCreditoAsNumber(c.credito) > 0 && (
+                              <span className="text-blue-600 font-medium">
+                                💳 ${getCreditoAsNumber(c.credito).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg p-3 border-2 border-green-200 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                        {cliente.nombre.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-900 truncate">{cliente.nombre}</div>
+                        {getCreditoAsNumber(cliente.credito) > 0 && (
+                          <div className="text-xs text-blue-600 font-medium mt-0.5">
+                            💳 ${getCreditoAsNumber(cliente.credito).toFixed(2)} crédito disponible
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setCliente(null);
+                        setBusquedaCliente('');
+                      }}
+                      className="ml-2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Tabs Productos/Combos */}
