@@ -111,13 +111,23 @@ export default function Usuarios() {
 
   const guardarUsuario = async () => {
     try {
-      if (!formData.username || !formData.nombre) {
-        toast.error('Username y nombre son requeridos');
+      // Validar y limpiar campos
+      const username = formData.username.trim();
+      const nombre = formData.nombre.trim();
+      const password = formData.password.trim();
+
+      if (!username || username.length < 3) {
+        toast.error('El username debe tener al menos 3 caracteres');
         return;
       }
 
-      if (!usuarioEditar && !formData.password) {
-        toast.error('La contraseña es requerida para nuevos usuarios');
+      if (!nombre || nombre.length < 2) {
+        toast.error('El nombre debe tener al menos 2 caracteres');
+        return;
+      }
+
+      if (!usuarioEditar && (!password || password.length < 6)) {
+        toast.error('La contraseña debe tener al menos 6 caracteres');
         return;
       }
 
@@ -127,22 +137,22 @@ export default function Usuarios() {
       }
 
       const data: any = {
-        nombre: formData.nombre,
+        nombre: nombre,
         role: formData.role,
         localId: formData.role === Role.VENDEDOR && formData.localId ? formData.localId : null,
         depositoId: formData.role === Role.DEPOSITO && formData.depositoId ? formData.depositoId : null,
       };
 
       if (usuarioEditar) {
-        if (formData.password) {
-          data.password = formData.password;
+        if (password && password.length >= 6) {
+          data.password = password;
         }
         data.activo = formData.activo;
         await api.put(`/usuarios/${usuarioEditar.id}`, data);
         toast.success('Usuario actualizado exitosamente');
       } else {
-        data.username = formData.username;
-        data.password = formData.password;
+        data.username = username;
+        data.password = password;
         await api.post('/usuarios', data);
         toast.success('Usuario creado exitosamente');
       }
