@@ -129,8 +129,8 @@ export default function Usuarios() {
       const data: any = {
         nombre: formData.nombre,
         role: formData.role,
-        localId: formData.role === Role.VENDEDOR ? formData.localId : null,
-        depositoId: formData.role === Role.DEPOSITO ? formData.depositoId : null,
+        localId: formData.role === Role.VENDEDOR && formData.localId ? formData.localId : null,
+        depositoId: formData.role === Role.DEPOSITO && formData.depositoId ? formData.depositoId : null,
       };
 
       if (usuarioEditar) {
@@ -150,7 +150,15 @@ export default function Usuarios() {
       setMostrarModal(false);
       cargarUsuarios();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Error al guardar usuario');
+      const errorMessage = error.response?.data?.error || 'Error al guardar usuario';
+      const errorDetails = error.response?.data?.details;
+      
+      if (errorDetails && Array.isArray(errorDetails) && errorDetails.length > 0) {
+        const detailsMessage = errorDetails.map((d: any) => `${d.path}: ${d.message}`).join(', ');
+        toast.error(`${errorMessage}: ${detailsMessage}`);
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
