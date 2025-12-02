@@ -7,6 +7,7 @@ import Layout from '@/components/Layout';
 import ModalCaja from '@/components/ModalCaja';
 import toast from 'react-hot-toast';
 import { DollarSign, ShoppingCart, Users, Package, AlertCircle, Warehouse, ShoppingBag, PackageSearch } from 'lucide-react';
+import { Role } from '@shared/types';
 
 export default function Dashboard() {
   const { user } = useAuthStore();
@@ -51,7 +52,7 @@ export default function Dashboard() {
       setLoading(true);
       
       // Si es usuario ALMACEN, cargar estadísticas de almacén
-      if (user?.role === 'ALMACEN') {
+      if (user?.role === Role.ALMACEN) {
         const [pedidosResponse, stockBajoResponse] = await Promise.all([
           api.get('/pedidos-almacen?estado=PENDIENTE'),
           api.get('/stock-deposito/alerts/bajo-stock'),
@@ -136,7 +137,7 @@ export default function Dashboard() {
   }, [cargarEstadisticas]);
 
   // Cards diferentes según el rol
-  const cards = user?.role === 'ALMACEN' ? [
+  const cards = user?.role === Role.ALMACEN ? [
     {
       title: 'Pedidos Pendientes',
       value: estadisticasAlmacen?.pedidosPendientes || 0,
@@ -216,7 +217,7 @@ export default function Dashboard() {
   ];
 
   // Acciones rápidas diferentes según el rol
-  const quickActions = user?.role === 'ALMACEN' ? [
+  const quickActions = user?.role === Role.ALMACEN ? [
     {
       title: 'Gestionar Stock Depósito',
       description: 'Ver y actualizar stock del almacén',
@@ -252,7 +253,7 @@ export default function Dashboard() {
       color: 'from-green-500 to-green-600',
       link: '/pos',
       buttonText: 'Ir a POS',
-      visible: user?.role === 'VENDEDOR',
+      visible: user?.role === Role.VENDEDOR,
     },
     {
       title: 'Gestión de Caja',
@@ -261,7 +262,7 @@ export default function Dashboard() {
       color: 'from-blue-500 to-blue-600',
       link: '#',
       buttonText: 'Gestionar Caja',
-      visible: user?.role === 'VENDEDOR',
+      visible: user?.role === Role.VENDEDOR,
       onClick: () => {
         // setModoCaja('auto');
         setMostrarModalCaja(true);
@@ -269,12 +270,12 @@ export default function Dashboard() {
     },
     {
       title: 'Gestionar Productos',
-      description: user?.role === 'ADMIN' ? 'Ver y editar productos' : 'Ver productos',
+      description: user?.role === Role.ADMIN ? 'Ver y editar productos' : 'Ver productos',
       icon: Package,
       color: 'from-green-600 to-emerald-600',
       link: '/dashboard/productos',
       buttonText: 'Ver Productos',
-      visible: user?.role !== 'ALMACEN',
+      visible: user?.role !== Role.ALMACEN,
     },
     {
       title: 'Ver Stock',
@@ -283,7 +284,7 @@ export default function Dashboard() {
       color: 'from-emerald-500 to-green-600',
       link: '/dashboard/stock',
       buttonText: 'Gestionar Stock',
-      visible: user?.role !== 'ALMACEN',
+      visible: user?.role !== Role.ALMACEN,
     },
   ].filter((item) => item.visible !== false);
 
@@ -296,9 +297,9 @@ export default function Dashboard() {
             Bienvenido, {user?.nombre}
           </h1>
           <p className="text-gray-600">
-            {user?.role === 'ADMIN'
+            {user?.role === Role.ADMIN
               ? 'Panel de administración - Gestión completa del sistema'
-              : user?.role === 'ALMACEN'
+              : user?.role === Role.ALMACEN
               ? 'Panel de almacén - Gestión de inventario y pedidos'
               : `Vendedor en ${user?.local?.nombre || 'tu local asignado'}`}
           </p>
@@ -338,7 +339,7 @@ export default function Dashboard() {
         </div>
         
         {/* Lista de pedidos pendientes para ALMACEN */}
-        {user?.role === 'ALMACEN' && estadisticasAlmacen?.pedidos && estadisticasAlmacen.pedidos.length > 0 && (
+        {user?.role === Role.ALMACEN && estadisticasAlmacen?.pedidos && estadisticasAlmacen.pedidos.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Pedidos Pendientes de Autorización</h2>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -437,7 +438,7 @@ export default function Dashboard() {
       </div>
 
       {/* Modal de Caja */}
-      {user?.role === 'VENDEDOR' && (
+      {user?.role === Role.VENDEDOR && (
         <ModalCaja
           isOpen={mostrarModalCaja}
           onClose={() => setMostrarModalCaja(false)}

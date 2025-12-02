@@ -29,7 +29,7 @@ export default function Usuarios() {
     username: '',
     password: '',
     nombre: '',
-    role: 'VENDEDOR' as 'ADMIN' | 'VENDEDOR',
+    role: Role.VENDEDOR as Role,
     localId: '',
     activo: true,
   });
@@ -112,7 +112,7 @@ export default function Usuarios() {
       const data: any = {
         nombre: formData.nombre,
         role: formData.role,
-        localId: formData.role === 'VENDEDOR' ? formData.localId : null,
+        localId: formData.role === Role.VENDEDOR ? formData.localId : null,
       };
 
       if (usuarioEditar) {
@@ -331,14 +331,15 @@ export default function Usuarios() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
                       <select
                         value={formData.role}
-                        onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'VENDEDOR', localId: '' })}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value as Role, localId: '' })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                       >
-                        <option value="VENDEDOR">Vendedor</option>
-                        <option value="ADMIN">Administrador</option>
+                        <option value={Role.VENDEDOR}>Vendedor</option>
+                        <option value={Role.ADMIN}>Administrador</option>
+                        <option value={Role.ALMACEN}>Almacén</option>
                       </select>
                     </div>
-                    {formData.role === 'VENDEDOR' && (
+                    {formData.role === Role.VENDEDOR && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Local *</label>
                         <select
