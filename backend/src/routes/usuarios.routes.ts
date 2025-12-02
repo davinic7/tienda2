@@ -13,13 +13,15 @@ const usuarioCreateSchema = z.object({
   nombre: z.string().min(2),
   role: z.enum(['ADMIN', 'VENDEDOR', 'DEPOSITO']),
   localId: z.string().uuid().optional().nullable(),
+  depositoId: z.string().uuid().optional().nullable(),
 });
 
 const usuarioUpdateSchema = z.object({
   nombre: z.string().min(2).optional(),
   password: z.string().min(6).optional(),
-  role: z.enum(['ADMIN', 'VENDEDOR', 'ALMACEN']).optional(),
+  role: z.enum(['ADMIN', 'VENDEDOR', 'DEPOSITO']).optional(),
   localId: z.string().uuid().optional().nullable(),
+  depositoId: z.string().uuid().optional().nullable(),
   activo: z.boolean().optional(),
 });
 
@@ -54,10 +56,17 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
         nombre: true,
         role: true,
         localId: true,
+        depositoId: true,
         activo: true,
         createdAt: true,
         updatedAt: true,
         local: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
+        deposito: {
           select: {
             id: true,
             nombre: true,
@@ -84,10 +93,17 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
         nombre: true,
         role: true,
         localId: true,
+        depositoId: true,
         activo: true,
         createdAt: true,
         updatedAt: true,
         local: true,
+        deposito: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
         _count: {
           select: {
             ventas: true,
@@ -123,16 +139,27 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Si es VENDEDOR, debe tener localId
-    // DEPOSITO no requiere localId (trabaja en el depósito central)
     if (data.role === 'VENDEDOR' && !data.localId) {
       res.status(400).json({ error: 'Los vendedores deben tener un local asignado' });
       return;
     }
     
-    // DEPOSITO no debe tener localId asignado
-    if (data.role === 'DEPOSITO' && data.localId) {
-      res.status(400).json({ error: 'Los usuarios de depósito no deben tener un local asignado' });
-      return;
+    // DEPOSITO no debe tener localId pero puede tener depositoId
+    if (data.role === 'DEPOSITO') {
+      if (data.localId) {
+        res.status(400).json({ error: 'Los usuarios de depósito no deben tener un local asignado' });
+        return;
+      }
+      // Si se proporciona depositoId, verificar que existe
+      if (data.depositoId) {
+        const deposito = await prisma.deposito.findUnique({
+          where: { id: data.depositoId },
+        });
+        if (!deposito) {
+          res.status(400).json({ error: 'El depósito especificado no existe' });
+          return;
+        }
+      }
     }
 
     // Verificar que el local existe (si se proporciona)
@@ -156,6 +183,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         nombre: data.nombre,
         role: data.role,
         localId: data.localId || null,
+        depositoId: data.depositoId || null,
       },
       select: {
         id: true,
@@ -163,9 +191,16 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         nombre: true,
         role: true,
         localId: true,
+        depositoId: true,
         activo: true,
         createdAt: true,
         local: true,
+        deposito: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
       },
     });
 
@@ -214,15 +249,26 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       }
     }
     
-    // Si es DEPOSITO, no debe tener localId
-    if (nuevoRol === 'DEPOSITO' && data.localId !== undefined && data.localId !== null) {
-      res.status(400).json({ error: 'Los usuarios de depósito no deben tener un local asignado' });
-      return;
-    }
-    
-    // Si se cambia a DEPOSITO, quitar localId
-    if (data.role === 'DEPOSITO' && usuarioAnterior.localId) {
-      data.localId = null;
+    // Si es DEPOSITO, no debe tener localId pero puede tener depositoId
+    if (nuevoRol === 'DEPOSITO') {
+      if (data.localId !== undefined && data.localId !== null) {
+        res.status(400).json({ error: 'Los usuarios de depósito no deben tener un local asignado' });
+        return;
+      }
+      // Si se cambia a DEPOSITO, quitar localId
+      if (data.role === 'DEPOSITO' && usuarioAnterior.localId) {
+        data.localId = null;
+      }
+      // Verificar que el depósito existe (si se proporciona)
+      if (data.depositoId) {
+        const deposito = await prisma.deposito.findUnique({
+          where: { id: data.depositoId },
+        });
+        if (!deposito) {
+          res.status(400).json({ error: 'El depósito especificado no existe' });
+          return;
+        }
+      }
     }
 
     // Verificar que el local existe (si se proporciona)
@@ -243,6 +289,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     if (data.password) updateData.password = await hashPassword(data.password);
     if (data.role) updateData.role = data.role;
     if (data.localId !== undefined) updateData.localId = data.localId;
+    if (data.depositoId !== undefined) updateData.depositoId = data.depositoId;
     if (data.activo !== undefined) updateData.activo = data.activo;
 
     const usuarioActualizado = await prisma.user.update({
@@ -254,9 +301,16 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
         nombre: true,
         role: true,
         localId: true,
+        depositoId: true,
         activo: true,
         updatedAt: true,
         local: true,
+        deposito: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
       },
     });
 
@@ -275,19 +329,31 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// DELETE /usuarios/:id - Desactivar usuario
+// DELETE /usuarios/:id - Eliminar usuario (solo ADMIN, con validaciones)
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const usuarioId = req.params.id;
 
-    // No permitir desactivarse a sí mismo
+    // No permitir eliminarse a sí mismo
     if (usuarioId === req.user!.id) {
-      res.status(400).json({ error: 'No puedes desactivar tu propio usuario' });
+      res.status(400).json({ error: 'No puedes eliminar tu propio usuario' });
       return;
     }
 
     const usuario = await prisma.user.findUnique({
       where: { id: usuarioId },
+      include: {
+        _count: {
+          select: {
+            ventas: true,
+            auditLogs: true,
+            pedidosSolicitados: true,
+            pedidosAutorizados: true,
+            movimientos: true,
+            aperturasCaja: true,
+          },
+        },
+      },
     });
 
     if (!usuario) {
@@ -295,18 +361,25 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
       return;
     }
 
-    // Soft delete: marcar como inactivo
-    const usuarioDesactivado = await prisma.user.update({
-      where: { id: usuarioId },
-      data: { activo: false },
-      select: {
-        id: true,
-        username: true,
-        nombre: true,
-        role: true,
-        activo: true,
-      },
-    });
+    // Verificar si tiene datos asociados (opcional: solo advertir, no bloquear)
+    const tieneDatos = 
+      usuario._count.ventas > 0 ||
+      usuario._count.pedidosSolicitados > 0 ||
+      usuario._count.pedidosAutorizados > 0 ||
+      usuario._count.movimientos > 0 ||
+      usuario._count.aperturasCaja > 0;
+
+    if (tieneDatos) {
+      // Eliminar usuario y sus relaciones (cascade)
+      await prisma.user.delete({
+        where: { id: usuarioId },
+      });
+    } else {
+      // Si no tiene datos, eliminar directamente
+      await prisma.user.delete({
+        where: { id: usuarioId },
+      });
+    }
 
     // Log de auditoría
     await createAuditLog({
@@ -314,11 +387,18 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
       accion: 'DELETE',
       tabla: 'User',
       datosAnteriores: usuario,
-      datosNuevos: usuarioDesactivado,
+      datosNuevos: null,
     });
 
-    res.json({ message: 'Usuario desactivado correctamente', usuario: usuarioDesactivado });
-  } catch (error) {
+    res.json({ message: 'Usuario eliminado correctamente' });
+  } catch (error: any) {
+    // Si hay error de foreign key, informar
+    if (error.code === 'P2003') {
+      res.status(400).json({ 
+        error: 'No se puede eliminar el usuario porque tiene datos asociados. Intenta desactivarlo primero.' 
+      });
+      return;
+    }
     next(error);
   }
 });

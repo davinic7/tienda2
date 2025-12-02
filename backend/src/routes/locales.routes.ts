@@ -148,7 +148,7 @@ router.put('/:id', authorize('ADMIN'), async (req: Request, res: Response, next:
   }
 });
 
-// DELETE /locales/:id - Eliminar/Desactivar local (solo ADMIN)
+// DELETE /locales/:id - Eliminar local (solo ADMIN, con validaciones)
 router.delete('/:id', authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const localId = req.params.id;
@@ -160,6 +160,11 @@ router.delete('/:id', authorize('ADMIN'), async (req: Request, res: Response, ne
           select: {
             usuarios: true,
             ventas: true,
+            stocks: true,
+            pedidos: true,
+            movimientosOrigen: true,
+            movimientosDestino: true,
+            aperturasCaja: true,
           },
         },
       },
@@ -170,10 +175,25 @@ router.delete('/:id', authorize('ADMIN'), async (req: Request, res: Response, ne
       return;
     }
 
-    // Soft delete: marcar como inactivo
-    const localEliminado = await prisma.local.update({
+    // Verificar si tiene datos asociados
+    const tieneDatos = 
+      local._count.usuarios > 0 ||
+      local._count.ventas > 0 ||
+      local._count.stocks > 0 ||
+      local._count.pedidos > 0 ||
+      local._count.movimientosOrigen > 0 ||
+      local._count.movimientosDestino > 0 ||
+      local._count.aperturasCaja > 0;
+
+    if (tieneDatos) {
+      return res.status(400).json({ 
+        error: 'No se puede eliminar el local porque tiene datos asociados (usuarios, ventas, stock, pedidos o movimientos). Intenta desactivarlo primero.' 
+      });
+    }
+
+    // Eliminar local
+    await prisma.local.delete({
       where: { id: localId },
-      data: { activo: false },
     });
 
     // Log de auditoría
@@ -182,11 +202,16 @@ router.delete('/:id', authorize('ADMIN'), async (req: Request, res: Response, ne
       accion: 'DELETE',
       tabla: 'Local',
       datosAnteriores: local,
-      datosNuevos: localEliminado,
+      datosNuevos: null,
     });
 
-    res.json({ message: 'Local desactivado correctamente', local: localEliminado });
-  } catch (error) {
+    res.json({ message: 'Local eliminado correctamente' });
+  } catch (error: any) {
+    if (error.code === 'P2003') {
+      return res.status(400).json({ 
+        error: 'No se puede eliminar el local porque tiene datos asociados.' 
+      });
+    }
     next(error);
   }
 });

@@ -80,15 +80,17 @@ export default function Depositos() {
     }
   };
 
-  const eliminarDeposito = async (id: string) => {
-    if (!confirm('¿Estás seguro de desactivar este depósito?')) return;
+  const eliminarDeposito = async (id: string, nombre: string) => {
+    if (!confirm(`¿Estás seguro de eliminar permanentemente el depósito "${nombre}"?\n\nEsta acción no se puede deshacer. Si el depósito tiene datos asociados (usuarios, stock, pedidos), no se podrá eliminar.`)) {
+      return;
+    }
 
     try {
       await api.delete(`/depositos/${id}`);
-      toast.success('Depósito desactivado exitosamente');
+      toast.success('Depósito eliminado exitosamente');
       cargarDepositos();
     } catch (error: any) {
-      toast.error('Error al desactivar depósito');
+      toast.error(error.response?.data?.error || 'Error al eliminar depósito');
     }
   };
 
@@ -168,8 +170,9 @@ export default function Depositos() {
                       <Edit className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => eliminarDeposito(deposito.id)}
+                      onClick={() => eliminarDeposito(deposito.id, deposito.nombre)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Eliminar"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>

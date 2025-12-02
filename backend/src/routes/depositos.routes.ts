@@ -74,18 +74,54 @@ router.put('/:id', authenticate, authorize('ADMIN'), async (req: Request, res: R
   }
 });
 
-// DELETE /api/depositos/:id - Desactivar depósito (solo ADMIN)
+// DELETE /api/depositos/:id - Eliminar depósito (solo ADMIN, con validaciones)
 router.delete('/:id', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
 
-    await prisma.deposito.update({
+    const deposito = await prisma.deposito.findUnique({
       where: { id },
-      data: { activo: false },
+      include: {
+        _count: {
+          select: {
+            usuarios: true,
+            stocks: true,
+            pedidos: true,
+            movimientos: true,
+          },
+        },
+      },
     });
 
-    res.json({ message: 'Depósito desactivado' });
-  } catch (error) {
+    if (!deposito) {
+      return res.status(404).json({ error: 'Depósito no encontrado' });
+    }
+
+    // Verificar si tiene datos asociados
+    const tieneDatos = 
+      deposito._count.usuarios > 0 ||
+      deposito._count.stocks > 0 ||
+      deposito._count.pedidos > 0 ||
+      deposito._count.movimientos > 0;
+
+    if (tieneDatos) {
+      return res.status(400).json({ 
+        error: 'No se puede eliminar el depósito porque tiene datos asociados (usuarios, stock, pedidos o movimientos). Intenta desactivarlo primero.' 
+      });
+    }
+
+    // Eliminar depósito
+    await prisma.deposito.delete({
+      where: { id },
+    });
+
+    res.json({ message: 'Depósito eliminado correctamente' });
+  } catch (error: any) {
+    if (error.code === 'P2003') {
+      return res.status(400).json({ 
+        error: 'No se puede eliminar el depósito porque tiene datos asociados.' 
+      });
+    }
     next(error);
   }
 });

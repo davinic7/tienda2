@@ -57,12 +57,14 @@ model User {
   password  String
   role      Role
   localId   String?
+  depositoId String?
   nombre    String
   activo    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   local     Local?   @relation(fields: [localId], references: [id])
+  deposito Deposito? @relation(fields: [depositoId], references: [id])
   ventas    Venta[]
   auditLogs AuditLog[]
   pedidosSolicitados PedidoAlmacen[] @relation("PedidoSolicitante")
@@ -72,6 +74,7 @@ model User {
   historialPrecios HistorialPrecio[]
 
   @@index([localId])
+  @@index([depositoId])
   @@index([username])
 }
 
@@ -162,6 +165,7 @@ model Deposito {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  usuarios  User[]
   stocks     StockDeposito[]
   pedidos    PedidoAlmacen[]
   movimientos MovimientoStock[]

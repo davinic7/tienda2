@@ -3,9 +3,9 @@ import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
-import type { Local } from '@shared/types';
+import type { Local, Deposito } from '@shared/types';
 import { Role } from '@shared/types';
-import { Plus, Users, Edit, Shield, UserCheck, Store } from 'lucide-react';
+import { Plus, Users, Edit, Shield, UserCheck, Store, Trash2, Warehouse } from 'lucide-react';
 
 interface UsuarioCompleto {
   id: string;
@@ -13,16 +13,19 @@ interface UsuarioCompleto {
   nombre: string;
   role: Role;
   localId?: string | null;
+  depositoId?: string | null;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
   local?: Local;
+  deposito?: Deposito;
 }
 
 export default function Usuarios() {
   const { user: currentUser } = useAuthStore();
   const [usuarios, setUsuarios] = useState<UsuarioCompleto[]>([]);
   const [locales, setLocales] = useState<Local[]>([]);
+  const [depositos, setDepositos] = useState<Deposito[]>([]);
   const [loading, setLoading] = useState(true);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState<UsuarioCompleto | null>(null);
@@ -32,6 +35,7 @@ export default function Usuarios() {
     nombre: '',
     role: Role.VENDEDOR as Role,
     localId: '',
+    depositoId: '',
     activo: true,
   });
   const [filtroRole, setFiltroRole] = useState('');
@@ -40,6 +44,7 @@ export default function Usuarios() {
     if (currentUser?.role === 'ADMIN') {
       cargarUsuarios();
       cargarLocales();
+      cargarDepositos();
     }
   }, [currentUser, filtroRole]);
 
@@ -67,6 +72,15 @@ export default function Usuarios() {
     }
   };
 
+  const cargarDepositos = async () => {
+    try {
+      const response = await api.get<Deposito[]>('/depositos');
+      setDepositos(response.data);
+    } catch (error: any) {
+      toast.error('Error al cargar depósitos');
+    }
+  };
+
   const abrirModalCrear = () => {
     setUsuarioEditar(null);
     setFormData({
@@ -75,6 +89,7 @@ export default function Usuarios() {
       nombre: '',
       role: Role.VENDEDOR,
       localId: '',
+      depositoId: '',
       activo: true,
     });
     setMostrarModal(true);
@@ -88,6 +103,7 @@ export default function Usuarios() {
       nombre: usuario.nombre,
       role: usuario.role,
       localId: usuario.localId || '',
+      depositoId: usuario.depositoId || '',
       activo: usuario.activo,
     });
     setMostrarModal(true);
@@ -114,6 +130,7 @@ export default function Usuarios() {
         nombre: formData.nombre,
         role: formData.role,
         localId: formData.role === Role.VENDEDOR ? formData.localId : null,
+        depositoId: formData.role === Role.DEPOSITO ? formData.depositoId : null,
       };
 
       if (usuarioEditar) {
@@ -137,21 +154,24 @@ export default function Usuarios() {
     }
   };
 
-  // Función eliminada - no se usa
-  // const desactivarUsuario = async (id: string) => {
-  //   if (id === currentUser?.id) {
-  //     toast.error('No puedes desactivar tu propio usuario');
-  //     return;
-  //   }
-  //   if (!confirm('¿Estás seguro de desactivar este usuario?')) return;
-  //   try {
-  //     await api.delete(`/usuarios/${id}`);
-  //     toast.success('Usuario desactivado exitosamente');
-  //     cargarUsuarios();
-  //   } catch (error: any) {
-  //     toast.error('Error al desactivar usuario');
-  //   }
-  // };
+  const eliminarUsuario = async (id: string, nombre: string) => {
+    if (id === currentUser?.id) {
+      toast.error('No puedes eliminar tu propio usuario');
+      return;
+    }
+    
+    if (!confirm(`¿Estás seguro de eliminar permanentemente al usuario "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+      return;
+    }
+    
+    try {
+      await api.delete(`/usuarios/${id}`);
+      toast.success('Usuario eliminado exitosamente');
+      cargarUsuarios();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Error al eliminar usuario');
+    }
+  };
 
   if (currentUser?.role !== 'ADMIN') {
     return (
@@ -190,6 +210,7 @@ export default function Usuarios() {
             <option value="">Todos los roles</option>
             <option value="ADMIN">Administradores</option>
             <option value="VENDEDOR">Vendedores</option>
+            <option value="DEPOSITO">Depósito</option>
           </select>
         </div>
 
@@ -242,12 +263,24 @@ export default function Usuarios() {
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={() => abrirModalEditar(usuario)}
-                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => abrirModalEditar(usuario)}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="Editar"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                    {usuario.id !== currentUser?.id && (
+                      <button
+                        onClick={() => eliminarUsuario(usuario.id, usuario.nombre)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center text-sm">
@@ -265,6 +298,12 @@ export default function Usuarios() {
                     <div className="flex items-center text-sm text-gray-600">
                       <Store className="w-4 h-4 mr-2 text-gray-400" />
                       {usuario.local.nombre}
+                    </div>
+                  )}
+                  {usuario.deposito && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Warehouse className="w-4 h-4 mr-2 text-gray-400" />
+                      {usuario.deposito.nombre}
                     </div>
                   )}
                 </div>
@@ -332,7 +371,7 @@ export default function Usuarios() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
                       <select
                         value={formData.role}
-                        onChange={(e) => setFormData({ ...formData, role: e.target.value as Role, localId: '' })}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value as Role, localId: '', depositoId: '' })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                       >
                         <option value={Role.VENDEDOR}>Vendedor</option>
@@ -353,6 +392,23 @@ export default function Usuarios() {
                           {locales.map((local) => (
                             <option key={local.id} value={local.id}>
                               {local.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    {formData.role === Role.DEPOSITO && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Depósito (Opcional)</label>
+                        <select
+                          value={formData.depositoId}
+                          onChange={(e) => setFormData({ ...formData, depositoId: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                        >
+                          <option value="">Sin depósito asignado</option>
+                          {depositos.map((deposito) => (
+                            <option key={deposito.id} value={deposito.id}>
+                              {deposito.nombre}
                             </option>
                           ))}
                         </select>

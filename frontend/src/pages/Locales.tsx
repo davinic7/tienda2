@@ -4,7 +4,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
 import type { Local } from '@shared/types';
-import { Plus, Store, Edit, MapPin, Phone } from 'lucide-react';
+import { Plus, Store, Edit, MapPin, Phone, Trash2 } from 'lucide-react';
 
 export default function Locales() {
   const { user } = useAuthStore();
@@ -80,17 +80,19 @@ export default function Locales() {
     }
   };
 
-  // Función eliminada - no se usa
-  // const eliminarLocal = async (id: string) => {
-  //   if (!confirm('¿Estás seguro de desactivar este local?')) return;
-  //   try {
-  //     await api.delete(`/locales/${id}`);
-  //     toast.success('Local desactivado exitosamente');
-  //     cargarLocales();
-  //   } catch (error: any) {
-  //     toast.error('Error al desactivar local');
-  //   }
-  // };
+  const eliminarLocal = async (id: string, nombre: string) => {
+    if (!confirm(`¿Estás seguro de eliminar permanentemente el local "${nombre}"?\n\nEsta acción no se puede deshacer. Si el local tiene datos asociados (usuarios, ventas, stock), no se podrá eliminar.`)) {
+      return;
+    }
+    
+    try {
+      await api.delete(`/locales/${id}`);
+      toast.success('Local eliminado exitosamente');
+      cargarLocales();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Error al eliminar local');
+    }
+  };
 
   if (user?.role !== 'ADMIN') {
     return (
@@ -164,6 +166,13 @@ export default function Locales() {
                       title="Editar"
                     >
                       <Edit className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => eliminarLocal(local.id, local.nombre)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
                 </div>

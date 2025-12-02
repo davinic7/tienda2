@@ -45,10 +45,12 @@ export interface User {
   nombre: string;
   role: Role;
   localId?: string | null;
+  depositoId?: string | null;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
   local?: Local | null;
+  deposito?: Deposito | null;
 }
 
 export interface Local {
