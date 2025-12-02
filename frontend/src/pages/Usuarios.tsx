@@ -3,7 +3,8 @@ import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import Layout from '@/components/Layout';
-import type { Local, Role } from '@shared/types';
+import type { Local } from '@shared/types';
+import { Role } from '@shared/types';
 import { Plus, Users, Edit, Shield, UserCheck, Store } from 'lucide-react';
 
 interface UsuarioCompleto {
@@ -72,7 +73,7 @@ export default function Usuarios() {
       username: '',
       password: '',
       nombre: '',
-      role: 'VENDEDOR',
+      role: Role.VENDEDOR,
       localId: '',
       activo: true,
     });

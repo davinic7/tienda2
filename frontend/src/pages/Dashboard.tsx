@@ -275,7 +275,7 @@ export default function Dashboard() {
       color: 'from-green-600 to-emerald-600',
       link: '/dashboard/productos',
       buttonText: 'Ver Productos',
-      visible: user?.role !== Role.ALMACEN,
+      visible: (user?.role as Role) !== Role.ALMACEN,
     },
     {
       title: 'Ver Stock',
@@ -284,7 +284,7 @@ export default function Dashboard() {
       color: 'from-emerald-500 to-green-600',
       link: '/dashboard/stock',
       buttonText: 'Gestionar Stock',
-      visible: user?.role !== Role.ALMACEN,
+      visible: (user?.role as Role) !== Role.ALMACEN,
     },
   ].filter((item) => item.visible !== false);
 
