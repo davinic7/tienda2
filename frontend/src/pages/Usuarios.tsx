@@ -337,7 +337,7 @@ export default function Usuarios() {
                       >
                         <option value={Role.VENDEDOR}>Vendedor</option>
                         <option value={Role.ADMIN}>Administrador</option>
-                        <option value={Role.ALMACEN}>Almacén</option>
+                        <option value={Role.DEPOSITO}>Depósito</option>
                       </select>
                     </div>
                     {formData.role === Role.VENDEDOR && (

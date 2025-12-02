@@ -1,7 +1,7 @@
 export enum Role {
   ADMIN = 'ADMIN',
   VENDEDOR = 'VENDEDOR',
-  ALMACEN = 'ALMACEN',
+  DEPOSITO = 'DEPOSITO',
 }
 
 export enum EstadoVenta {

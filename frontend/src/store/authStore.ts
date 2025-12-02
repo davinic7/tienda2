@@ -85,15 +85,41 @@ export const useAuthStore = create<AuthState>((set, get) => {
     },
 
     logout: () => {
-      disconnectSocket();
-      const newState = {
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        isAuthenticated: false,
-      };
-      set(newState);
-      saveStoredAuth(newState);
+      try {
+        // Desconectar socket primero
+        disconnectSocket();
+        
+        // Limpiar estado
+        const newState = {
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        };
+        set(newState);
+        saveStoredAuth(newState);
+        
+        // Limpiar localStorage de forma explícita (por si acaso)
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+        }
+      } catch (error) {
+        console.error('Error en logout:', error);
+        // Forzar limpieza incluso si hay error
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+        }
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        });
+      }
     },
 
     loadUser: async () => {

@@ -11,7 +11,7 @@ const usuarioCreateSchema = z.object({
   username: z.string().min(3),
   password: z.string().min(6),
   nombre: z.string().min(2),
-  role: z.enum(['ADMIN', 'VENDEDOR', 'ALMACEN']),
+  role: z.enum(['ADMIN', 'VENDEDOR', 'DEPOSITO']),
   localId: z.string().uuid().optional().nullable(),
 });
 
@@ -123,15 +123,15 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Si es VENDEDOR, debe tener localId
-    // ALMACEN no requiere localId (trabaja en el almacén central)
+    // DEPOSITO no requiere localId (trabaja en el depósito central)
     if (data.role === 'VENDEDOR' && !data.localId) {
       res.status(400).json({ error: 'Los vendedores deben tener un local asignado' });
       return;
     }
     
-    // ALMACEN no debe tener localId asignado
-    if (data.role === 'ALMACEN' && data.localId) {
-      res.status(400).json({ error: 'Los usuarios de almacén no deben tener un local asignado' });
+    // DEPOSITO no debe tener localId asignado
+    if (data.role === 'DEPOSITO' && data.localId) {
+      res.status(400).json({ error: 'Los usuarios de depósito no deben tener un local asignado' });
       return;
     }
 
@@ -214,14 +214,14 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
       }
     }
     
-    // Si es ALMACEN, no debe tener localId
-    if (nuevoRol === 'ALMACEN' && data.localId !== undefined && data.localId !== null) {
-      res.status(400).json({ error: 'Los usuarios de almacén no deben tener un local asignado' });
+    // Si es DEPOSITO, no debe tener localId
+    if (nuevoRol === 'DEPOSITO' && data.localId !== undefined && data.localId !== null) {
+      res.status(400).json({ error: 'Los usuarios de depósito no deben tener un local asignado' });
       return;
     }
     
-    // Si se cambia a ALMACEN, quitar localId
-    if (data.role === 'ALMACEN' && usuarioAnterior.localId) {
+    // Si se cambia a DEPOSITO, quitar localId
+    if (data.role === 'DEPOSITO' && usuarioAnterior.localId) {
       data.localId = null;
     }
 

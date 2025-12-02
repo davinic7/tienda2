@@ -51,8 +51,8 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
-      // Si es usuario ALMACEN, cargar estadísticas de almacén
-      if (user?.role === Role.ALMACEN) {
+      // Si es usuario DEPOSITO, cargar estadísticas de depósito
+      if (user?.role === Role.DEPOSITO) {
         const [pedidosResponse, stockBajoResponse] = await Promise.all([
           api.get('/pedidos-almacen?estado=PENDIENTE'),
           api.get('/stock-deposito/alerts/bajo-stock'),
@@ -137,7 +137,7 @@ export default function Dashboard() {
   }, [cargarEstadisticas]);
 
   // Cards diferentes según el rol
-  const cards = user?.role === Role.ALMACEN ? [
+  const cards = user?.role === Role.DEPOSITO ? [
     {
       title: 'Pedidos Pendientes',
       value: estadisticasAlmacen?.pedidosPendientes || 0,
@@ -166,7 +166,7 @@ export default function Dashboard() {
       link: '/dashboard/stock-deposito',
     },
     {
-      title: 'Pedidos Almacén',
+      title: 'Pedidos Depósito',
       description: 'Ver todos los pedidos',
       icon: Warehouse,
       color: 'from-purple-500 to-purple-600',
@@ -217,7 +217,7 @@ export default function Dashboard() {
   ];
 
   // Acciones rápidas diferentes según el rol
-  const quickActions = user?.role === Role.ALMACEN ? [
+  const quickActions = user?.role === Role.DEPOSITO ? [
     {
       title: 'Gestionar Stock Depósito',
       description: 'Ver y actualizar stock del almacén',
@@ -275,7 +275,7 @@ export default function Dashboard() {
       color: 'from-green-600 to-emerald-600',
       link: '/dashboard/productos',
       buttonText: 'Ver Productos',
-      visible: (user?.role as Role) !== Role.ALMACEN,
+      visible: (user?.role as Role) !== Role.DEPOSITO,
     },
     {
       title: 'Ver Stock',
@@ -284,7 +284,7 @@ export default function Dashboard() {
       color: 'from-emerald-500 to-green-600',
       link: '/dashboard/stock',
       buttonText: 'Gestionar Stock',
-      visible: (user?.role as Role) !== Role.ALMACEN,
+      visible: (user?.role as Role) !== Role.DEPOSITO,
     },
   ].filter((item) => item.visible !== false);
 
@@ -299,8 +299,8 @@ export default function Dashboard() {
           <p className="text-gray-600">
             {user?.role === Role.ADMIN
               ? 'Panel de administración - Gestión completa del sistema'
-              : user?.role === Role.ALMACEN
-              ? 'Panel de almacén - Gestión de inventario y pedidos'
+              : user?.role === Role.DEPOSITO
+              ? 'Panel de depósito - Gestión de inventario y pedidos'
               : `Vendedor en ${user?.local?.nombre || 'tu local asignado'}`}
           </p>
         </div>
@@ -338,8 +338,8 @@ export default function Dashboard() {
           })}
         </div>
         
-        {/* Lista de pedidos pendientes para ALMACEN */}
-        {user?.role === Role.ALMACEN && estadisticasAlmacen?.pedidos && estadisticasAlmacen.pedidos.length > 0 && (
+        {/* Lista de pedidos pendientes para DEPOSITO */}
+        {user?.role === Role.DEPOSITO && estadisticasAlmacen?.pedidos && estadisticasAlmacen.pedidos.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Pedidos Pendientes de Autorización</h2>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

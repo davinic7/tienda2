@@ -130,8 +130,8 @@ router.post('/', authenticate, async (req: Request, res: Response, next: NextFun
   }
 });
 
-// PUT /api/pedidos-almacen/:id/autorizar - Autorizar pedido (ADMIN o ALMACEN)
-router.put('/:id/autorizar', authenticate, authorize('ADMIN', 'ALMACEN'), async (req: Request, res: Response, next: NextFunction) => {
+// PUT /api/pedidos-almacen/:id/autorizar - Autorizar pedido (ADMIN o DEPOSITO)
+router.put('/:id/autorizar', authenticate, authorize('ADMIN', 'DEPOSITO'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const user = (req as any).user;
@@ -161,8 +161,8 @@ router.put('/:id/autorizar', authenticate, authorize('ADMIN', 'ALMACEN'), async 
   }
 });
 
-// PUT /api/pedidos-almacen/:id/rechazar - Rechazar pedido (ADMIN o ALMACEN)
-router.put('/:id/rechazar', authenticate, authorize('ADMIN', 'ALMACEN'), async (req: Request, res: Response, next: NextFunction) => {
+// PUT /api/pedidos-almacen/:id/rechazar - Rechazar pedido (ADMIN o DEPOSITO)
+router.put('/:id/rechazar', authenticate, authorize('ADMIN', 'DEPOSITO'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const { motivo } = z.object({ motivo: z.string().optional() }).parse(req.body);
@@ -202,8 +202,8 @@ router.put('/:id/rechazar', authenticate, authorize('ADMIN', 'ALMACEN'), async (
   }
 });
 
-// PUT /api/pedidos-almacen/:id/procesar - Procesar pedido autorizado (ADMIN o ALMACEN)
-router.put('/:id/procesar', authenticate, authorize('ADMIN', 'ALMACEN'), async (req: Request, res: Response, next: NextFunction) => {
+// PUT /api/pedidos-almacen/:id/procesar - Procesar pedido autorizado (ADMIN o DEPOSITO)
+router.put('/:id/procesar', authenticate, authorize('ADMIN', 'DEPOSITO'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const user = (req as any).user;

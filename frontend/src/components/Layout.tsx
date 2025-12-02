@@ -45,17 +45,33 @@ export default function Layout({ children }: LayoutProps) {
 
     try {
       setVerificandoCaja(true);
-      const response = await api.get('/caja/estado');
-      const cajaAbierta = response.data.cajaAbierta;
       
-      if (cajaAbierta) {
-        setMostrarModalCajaAbierta(true);
-        return false; // Bloquear logout
-      }
-      
-      return true; // Permitir logout
+      // Crear una promesa con timeout de 2 segundos
+      const timeoutPromise = new Promise<boolean>((resolve) => {
+        setTimeout(() => {
+          console.warn('Timeout al verificar caja, permitiendo logout');
+          resolve(true); // Permitir logout si hay timeout
+        }, 2000);
+      });
+
+      const verificarPromise = api.get('/caja/estado')
+        .then((response) => {
+          const cajaAbierta = response.data.cajaAbierta;
+          if (cajaAbierta) {
+            setMostrarModalCajaAbierta(true);
+            return false; // Bloquear logout
+          }
+          return true; // Permitir logout
+        })
+        .catch((error) => {
+          console.error('Error al verificar estado de caja:', error);
+          return true; // Permitir logout en caso de error
+        });
+
+      // Usar Promise.race para que gane el que termine primero
+      return await Promise.race([verificarPromise, timeoutPromise]);
     } catch (error: any) {
-      console.error('Error al verificar estado de caja:', error);
+      console.error('Error inesperado al verificar estado de caja:', error);
       // En caso de error, permitir logout para no bloquear al usuario
       return true;
     } finally {
@@ -64,17 +80,35 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   const handleLogout = async () => {
-    // Verificar estado de caja antes de cerrar sesión
-    const puedeCerrarSesion = await verificarEstadoCaja();
-    
-    if (!puedeCerrarSesion) {
-      // El modal de advertencia se mostrará automáticamente
-      return;
-    }
+    // Crear un timeout de seguridad que fuerza el logout después de 3 segundos
+    const timeoutId = setTimeout(() => {
+      console.warn('Timeout en verificación de caja, forzando logout');
+      logout();
+      navigate('/login');
+    }, 3000);
 
-    // Si la caja está cerrada, proceder con el logout
-    logout();
-    navigate('/login');
+    try {
+      // Verificar estado de caja antes de cerrar sesión
+      const puedeCerrarSesion = await verificarEstadoCaja();
+      
+      // Cancelar el timeout si la verificación terminó a tiempo
+      clearTimeout(timeoutId);
+      
+      if (!puedeCerrarSesion) {
+        // El modal de advertencia se mostrará automáticamente
+        return;
+      }
+
+      // Si la caja está cerrada, proceder con el logout
+      logout();
+      navigate('/login');
+    } catch (error) {
+      // Cancelar timeout y forzar logout en caso de error
+      clearTimeout(timeoutId);
+      console.error('Error en logout:', error);
+      logout();
+      navigate('/login');
+    }
   };
 
   const handleCerrarCajaYLogout = async () => {
@@ -117,9 +151,9 @@ export default function Layout({ children }: LayoutProps) {
     // Dashboard - todos los roles
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visible: true },
     
-    // Menú específico para ALMACEN
-    { path: '/dashboard/stock-deposito', label: 'Stock Depósito', icon: PackageSearch, visible: user?.role === 'ADMIN' || user?.role === 'ALMACEN' },
-    { path: '/dashboard/pedidos-almacen', label: 'Pedidos Almacén', icon: ShoppingBag, visible: user?.role === 'ADMIN' || user?.role === 'ALMACEN' || user?.role === 'VENDEDOR' },
+    // Menú específico para DEPOSITO
+    { path: '/dashboard/stock-deposito', label: 'Stock Depósito', icon: PackageSearch, visible: user?.role === 'ADMIN' || user?.role === 'DEPOSITO' },
+    { path: '/dashboard/pedidos-almacen', label: 'Pedidos Depósito', icon: ShoppingBag, visible: user?.role === 'ADMIN' || user?.role === 'DEPOSITO' || user?.role === 'VENDEDOR' },
     { path: '/dashboard/depositos', label: 'Depósitos', icon: Warehouse, visible: user?.role === 'ADMIN' },
     
     // Menú para VENDEDOR
@@ -131,12 +165,12 @@ export default function Layout({ children }: LayoutProps) {
     { path: '/dashboard/locales', label: 'Locales', icon: Store, visible: user?.role === 'ADMIN' },
     { path: '/dashboard/usuarios', label: 'Usuarios', icon: Users, visible: user?.role === 'ADMIN' },
     
-    // Menú compartido (no para ALMACEN)
-    { path: '/dashboard/ventas', label: 'Ventas', icon: FileText, visible: user?.role !== 'ALMACEN' },
-    { path: '/dashboard/clientes', label: 'Clientes', icon: Users, visible: user?.role !== 'ALMACEN' },
-    { path: '/dashboard/stock', label: 'Stock', icon: Box, visible: user?.role !== 'ALMACEN' },
-    { path: '/dashboard/reportes', label: 'Reportes', icon: TrendingUp, visible: user?.role !== 'ALMACEN' },
-    { path: '/dashboard/notificaciones', label: 'Notificaciones', icon: Bell, visible: user?.role !== 'ALMACEN' },
+    // Menú compartido (no para DEPOSITO)
+    { path: '/dashboard/ventas', label: 'Ventas', icon: FileText, visible: user?.role !== 'DEPOSITO' },
+    { path: '/dashboard/clientes', label: 'Clientes', icon: Users, visible: user?.role !== 'DEPOSITO' },
+    { path: '/dashboard/stock', label: 'Stock', icon: Box, visible: user?.role !== 'DEPOSITO' },
+    { path: '/dashboard/reportes', label: 'Reportes', icon: TrendingUp, visible: user?.role !== 'DEPOSITO' },
+    { path: '/dashboard/notificaciones', label: 'Notificaciones', icon: Bell, visible: user?.role !== 'DEPOSITO' },
   ].filter((item) => item.visible);
 
   const isActive = (path: string) => {
