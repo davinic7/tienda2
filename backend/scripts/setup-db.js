@@ -4,6 +4,15 @@ const { execSync } = require('child_process');
 
 console.log('🔧 Configurando base de datos...');
 
+// Primero, migrar datos si es necesario (ALMACEN -> DEPOSITO)
+try {
+  console.log('🔄 Verificando migración de roles...');
+  execSync('node scripts/migrate-role-almacen.js', { stdio: 'inherit' });
+} catch (error) {
+  console.log('⚠️  Error en migración de roles, continuando...');
+  // Continuar aunque falle
+}
+
 try {
   // Intentar aplicar migraciones
   console.log('📦 Aplicando migraciones...');
@@ -18,6 +27,7 @@ try {
   if (
     errorOutput.includes('No migration found') || 
     errorOutput.includes('P3019') ||
+    errorOutput.includes('P3005') ||
     exitCode !== 0
   ) {
     console.log('⚠️  No se encontraron migraciones o hay conflicto, sincronizando schema con db push...');
@@ -25,8 +35,25 @@ try {
       execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
       console.log('✅ Schema sincronizado exitosamente');
     } catch (pushError) {
-      console.error('❌ Error al sincronizar schema:', pushError.message);
-      process.exit(1);
+      const pushErrorOutput = pushError.stdout?.toString() || pushError.stderr?.toString() || pushError.message || '';
+      
+      // Si el error es por el enum ALMACEN, intentar migración manual
+      if (pushErrorOutput.includes('ALMACEN') || pushErrorOutput.includes('invalid input value for enum')) {
+        console.log('🔄 Intentando migración manual del enum...');
+        try {
+          // Ejecutar migración de datos nuevamente
+          execSync('node scripts/migrate-role-almacen.js', { stdio: 'inherit' });
+          // Intentar db push nuevamente
+          execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
+          console.log('✅ Schema sincronizado exitosamente después de migración');
+        } catch (retryError) {
+          console.error('❌ Error al sincronizar schema después de migración:', retryError.message);
+          process.exit(1);
+        }
+      } else {
+        console.error('❌ Error al sincronizar schema:', pushErrorOutput);
+        process.exit(1);
+      }
     }
   } else {
     console.error('❌ Error al aplicar migraciones:', errorOutput);
