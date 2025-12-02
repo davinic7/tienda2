@@ -104,7 +104,7 @@ export default function Usuarios() {
         return;
       }
 
-      if (formData.role === 'VENDEDOR' && !formData.localId) {
+      if (formData.role === Role.VENDEDOR && !formData.localId) {
         toast.error('Los vendedores deben tener un local asignado');
         return;
       }
